@@ -50,6 +50,41 @@ public class LibraryManagementData {
 		
 	}
 	
+	public LibraryManagementData(Long libraryId, String name, String address, String city, String state, String zip,
+			String phone) {
+		this.libraryId = libraryId;
+		this.name = name;
+		this.address = address;
+		this.city = city;
+		this.state = state;
+		this.zip = zip;
+		this.phone = phone;
+	}
+	
+	public Libraries toLibrary() {
+		Libraries library = new Libraries();
+		
+		library.setLibraryId(libraryId);
+		library.setName(name);
+		library.setAddress(address);
+		library.setCity(city);
+		library.setState(state);
+		library.setZip(zip);
+		library.setPhone(phone);
+		
+		for (LibraryManagementBooks libraryManagementBooks : books)
+		{
+			Book book = new Book();
+			book.setBookId(libraryManagementBooks.getBookId());
+			book.setTitle(libraryManagementBooks.getTitle());
+			book.setAuthor(libraryManagementBooks.getAuthor());
+			book.setIsbn(libraryManagementBooks.getIsbn());
+			book.setQuantity(libraryManagementBooks.getQuantity());
+			library.getBooks().add(book);
+		}
+		
+		return library;
+	}
 	
 	
 	
@@ -61,6 +96,14 @@ public class LibraryManagementData {
 		private String author;
 		private String isbn;
 		private int quantity;
+		public LibraryManagementBooks(Book book)
+		{
+			bookId = book.getBookId();
+			title = book.getTitle();
+			author = book.getAuthor();
+			isbn = book.getIsbn();
+			quantity = book.getQuantity();
+		}
 		
 	}
 	
@@ -71,6 +114,14 @@ public class LibraryManagementData {
 		private String name;
 		private String address;
 		private String email;
+		
+		public LibraryManagementBorrowers(Borrower borrower)
+		{
+			borrowerId = borrower.getBorrowerId();
+			name = borrower.getName();
+			address = borrower.getAddress();
+			email = borrower.getEmail();
+		}
 		
 	}
 	
@@ -92,22 +143,15 @@ public class LibraryManagementData {
 			this.isbn = book.getIsbn();
 			this.quantity = book.getQuantity();
 			
-			for (Borrower borrower : book.getBorrowers())
-			{
-				LibraryManagementBorrowers libraryManagementBorrowers = new LibraryManagementBorrowers();
-				libraryManagementBorrowers.setBorrowerId(borrower.getBorrowerId());
-				libraryManagementBorrowers.setName(borrower.getName());
-				libraryManagementBorrowers.setAddress(borrower.getAddress());
-				libraryManagementBorrowers.setEmail(borrower.getEmail());
-				borrowers.add(libraryManagementBorrowers);
-			}
-			
 		}
 		
-		
-		
-		
-		
+		public BooksData(Long bookId, String title, String author, String isbn, int quantity) {
+			this.bookId = bookId;
+			this.title = title;
+			this.author = author;
+			this.isbn = isbn;
+			this.quantity = quantity;
+		}
 		
 		public Book toBook()
 		{
