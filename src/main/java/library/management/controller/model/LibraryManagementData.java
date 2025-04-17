@@ -25,7 +25,7 @@ public class LibraryManagementData {
 	private String phone;
 	
 	private Set<LibraryManagementBooks> books = new HashSet<>();
-	private Set<LibraryManagementBorrowers> borrowers = new HashSet<>();
+	
 	
 	public LibraryManagementData(Libraries library)
 	{
@@ -48,17 +48,8 @@ public class LibraryManagementData {
 			books.add(libraryManagementBooks);
 		}
 		
-		for (Borrower borrower : library.getBorrowers())
-		{
-			LibraryManagementBorrowers libraryManagementBorrowers = new LibraryManagementBorrowers();
-			libraryManagementBorrowers.setBorrowerId(borrower.getBorrowerId());
-			libraryManagementBorrowers.setName(borrower.getName());
-			libraryManagementBorrowers.setAddress(borrower.getAddress());
-			libraryManagementBorrowers.setEmail(borrower.getEmail());
-			borrowers.add(libraryManagementBorrowers);
-		}
-		
 	}
+	
 	
 	
 	
@@ -83,4 +74,63 @@ public class LibraryManagementData {
 		
 	}
 	
+	@Data
+	@NoArgsConstructor
+	public class BooksData
+	{
+		private Long bookId;
+		private String title;
+		private String author;
+		private String isbn;
+		private int quantity;
+		private Set<LibraryManagementBorrowers> borrowers = new HashSet<>();
+		public BooksData(Book book)
+		{
+			this.bookId = book.getBookId();
+			this.title = book.getTitle();
+			this.author = book.getAuthor();
+			this.isbn = book.getIsbn();
+			this.quantity = book.getQuantity();
+			
+			for (Borrower borrower : book.getBorrowers())
+			{
+				LibraryManagementBorrowers libraryManagementBorrowers = new LibraryManagementBorrowers();
+				libraryManagementBorrowers.setBorrowerId(borrower.getBorrowerId());
+				libraryManagementBorrowers.setName(borrower.getName());
+				libraryManagementBorrowers.setAddress(borrower.getAddress());
+				libraryManagementBorrowers.setEmail(borrower.getEmail());
+				borrowers.add(libraryManagementBorrowers);
+			}
+			
+		}
+		
+		
+		
+		
+		
+		
+		public Book toBook()
+		{
+			Book book = new Book();
+			book.setBookId(bookId);
+			book.setTitle(title);
+			book.setAuthor(author);
+			book.setIsbn(isbn);
+			book.setQuantity(quantity);
+			
+			for (LibraryManagementBorrowers libraryManagementBorrowers : borrowers)
+			{
+				Borrower borrower = new Borrower();
+				borrower.setBorrowerId(libraryManagementBorrowers.getBorrowerId());
+				borrower.setName(libraryManagementBorrowers.getName());
+				borrower.setAddress(libraryManagementBorrowers.getAddress());
+				borrower.setEmail(libraryManagementBorrowers.getEmail());
+				book.getBorrowers().add(borrower);
+			}
+			
+			return book;
+		}
+		
+		
+	}
 }
