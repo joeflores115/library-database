@@ -1,12 +1,12 @@
 package library.management.controller.model;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
 import library.management.entity.Book;
 import library.management.entity.Borrower;
+import library.management.entity.Checkout;
 import library.management.entity.Libraries;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,7 +47,6 @@ public class LibraryManagementData {
 			libraryManagementBooks.setQuantity(book.getQuantity());
 			books.add(libraryManagementBooks);
 		}
-		
 	}
 	
 	public LibraryManagementData(Long libraryId, String name, String address, String city, String state, String zip,
@@ -80,77 +79,87 @@ public class LibraryManagementData {
 			book.setAuthor(libraryManagementBooks.getAuthor());
 			book.setIsbn(libraryManagementBooks.getIsbn());
 			book.setQuantity(libraryManagementBooks.getQuantity());
+			
 			library.getBooks().add(book);
 		}
 		
 		return library;
 	}
-	
-	
-	
+
 	@Data
 	@NoArgsConstructor
-	public static class LibraryManagementBooks{
-		private Long bookId;
-		private String title;
-		private String author;
-		private String isbn;
-		private int quantity;
-		public LibraryManagementBooks(Book book)
+	public static class CheckoutData
+	{
+		private Long checkoutId;
+	    
+	    private String title;
+	    private String author;
+	    private String isbn;
+	    private int quantity;
+	    
+	    private String name;
+	    private String address;
+	    private String email;
+	    private LocalDate checkoutDate;
+	    private LocalDate dueDate;
+	    private LocalDate returnDate;
+	
+	    public CheckoutData(Checkout checkout) {
+	        this.checkoutId = checkout.getCheckoutId();
+	        this.title = checkout.getBook().getTitle();
+	        this.author = checkout.getBook().getAuthor();
+	        this.isbn = checkout.getBook().getIsbn();
+	        this.quantity = checkout.getBook().getQuantity();
+	        this.name = checkout.getBorrower().getName();
+	        this.address = checkout.getBorrower().getAddress();
+	        this.email = checkout.getBorrower().getEmail();
+	        this.checkoutDate = checkout.getCheckoutDate();
+	        this.dueDate = checkout.getDueDate();
+	        this.returnDate = checkout.getReturnDate();
+	    }		
+	    public CheckoutData(Book book, Long borrowerId, LocalDate dueDate, LocalDate returnDate)
 		{
-			bookId = book.getBookId();
-			title = book.getTitle();
-			author = book.getAuthor();
-			isbn = book.getIsbn();
-			quantity = book.getQuantity();
+
+			this.title = book.getTitle();
+			this.author = book.getAuthor();
+			this.isbn = book.getIsbn();
+			this.quantity = book.getQuantity();
+
+			this.dueDate = dueDate;
+			this.returnDate = returnDate;
 		}
-		
+	    
+	    public Checkout toCheckout()
+	    {
+	    	Checkout checkout = new Checkout();
+	    	checkout.setCheckoutId(checkoutId);
+	    	checkout.setCheckoutDate(checkoutDate);
+	    	checkout.setDueDate(dueDate);
+	    	checkout.setReturnDate(returnDate);
+	    	
+	    	return checkout;
+	    }
+	
 	}
 	
 	@Data
 	@NoArgsConstructor
-	public static class LibraryManagementBorrowers{
-		private Long borrowerId;
-		private String name;
-		private String address;
-		private String email;
-		
-		public LibraryManagementBorrowers(Borrower borrower)
-		{
-			borrowerId = borrower.getBorrowerId();
-			name = borrower.getName();
-			address = borrower.getAddress();
-			email = borrower.getEmail();
-		}
-		
-	}
-	
-	@Data
-	@NoArgsConstructor
-	public class BooksData
+	public static class BookData
 	{
 		private Long bookId;
 		private String title;
 		private String author;
 		private String isbn;
 		private int quantity;
-		private Set<LibraryManagementBorrowers> borrowers = new HashSet<>();
-		public BooksData(Book book)
+		
+		public BookData(Book book)
 		{
 			this.bookId = book.getBookId();
 			this.title = book.getTitle();
 			this.author = book.getAuthor();
 			this.isbn = book.getIsbn();
 			this.quantity = book.getQuantity();
-			
-		}
 		
-		public BooksData(Long bookId, String title, String author, String isbn, int quantity) {
-			this.bookId = bookId;
-			this.title = title;
-			this.author = author;
-			this.isbn = isbn;
-			this.quantity = quantity;
 		}
 		
 		public Book toBook()
@@ -162,19 +171,59 @@ public class LibraryManagementData {
 			book.setIsbn(isbn);
 			book.setQuantity(quantity);
 			
-			for (LibraryManagementBorrowers libraryManagementBorrowers : borrowers)
-			{
-				Borrower borrower = new Borrower();
-				borrower.setBorrowerId(libraryManagementBorrowers.getBorrowerId());
-				borrower.setName(libraryManagementBorrowers.getName());
-				borrower.setAddress(libraryManagementBorrowers.getAddress());
-				borrower.setEmail(libraryManagementBorrowers.getEmail());
-				book.getBorrowers().add(borrower);
-			}
-			
 			return book;
 		}
+	}
+	
+	@Data
+	@NoArgsConstructor
+	public static class BorrowerData
+	{
+		private Long borrowerId;
+		private String name;
+		private String address;
+		private String email;
 		
+		public BorrowerData(Borrower borrower)
+		{
+			this.borrowerId = borrower.getBorrowerId();
+			this.name = borrower.getName();
+			this.address = borrower.getAddress();
+			this.email = borrower.getEmail();
+			
+		}
+		
+		public Borrower toBorrower()
+		{
+			Borrower borrower = new Borrower();
+			borrower.setBorrowerId(borrowerId);
+			borrower.setName(name);
+			borrower.setAddress(address);
+			borrower.setEmail(email);
+			
+			return borrower;
+		}
+		
+	}
+	
+	@Data
+	@NoArgsConstructor
+	public static class LibraryManagementBooks{
+		private Long bookId;
+		private String title;
+		private String author;
+		private String isbn;
+		private int quantity;
+		
+	}
+	
+	@Data
+	@NoArgsConstructor
+	public static class LibraryManagementBorrowers{
+		private Long borrowerId;
+		private String name;
+		private String address;
+		private String email;
 		
 	}
 }
