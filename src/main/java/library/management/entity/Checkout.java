@@ -21,10 +21,12 @@ public class Checkout {
 	
 	@ManyToOne
 	@JoinColumn(name = "book_id", nullable = false)
+	@EqualsAndHashCode.Exclude
 	private Book book;
 	
 	@ManyToOne
 	@JoinColumn(name = "borrower_id", nullable = false)
+	@EqualsAndHashCode.Exclude
 	private Borrower borrower;
 	
 	@EqualsAndHashCode.Exclude

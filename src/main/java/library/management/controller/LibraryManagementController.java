@@ -74,14 +74,7 @@ public class LibraryManagementController
 		return libraryManagementService.saveCheckout(bookId, borrowerId ,checkoutData);
 	}
 	
-	@PostMapping("/book/{bookId}/checkout/{checkoutId}")
-	@ResponseStatus(code = HttpStatus.CREATED)
-	public CheckoutData bookReturn(@PathVariable Long checkoutId ,@RequestBody CheckoutData checkoutData)
-	{
-		log.info("Returning book: {}", checkoutData);
-		
-		return libraryManagementService.returnBook(checkoutId);
-	}
+	
 	
 	//********************************************
 	//The following methods will be used Read
@@ -188,6 +181,16 @@ public class LibraryManagementController
 		return libraryManagementService.returnBook(checkoutId);
 	}
 	
+	
+	//@PutMapping("/book/{bookId}/checkout/{checkoutId}")
+	//@ResponseStatus(code = HttpStatus.CREATED)
+	//public CheckoutData bookReturn(@PathVariable Long checkoutId ,@RequestBody CheckoutData checkoutData)
+	//{
+	//	log.info("Returning book: {}", checkoutData);
+		
+	//	return libraryManagementService.returnBook(checkoutId);
+	//}
+	
 	//********************************************
 	//The following methods will be used to Delete
 	//********************************************
@@ -198,26 +201,26 @@ public class LibraryManagementController
 		
 		libraryManagementService.deleteLibrary(libraryId);
 	}
-	@DeleteMapping("/{libraryId}/book")
+	@DeleteMapping("/{libraryId}/book/{bookId}")
 	public void deleteBook(@PathVariable Long libraryId, @PathVariable Long bookId)
 	{
 		log.info("Deleting book: {} for library: {}", bookId, libraryId);
 		
 		libraryManagementService.deleteBook(libraryId, bookId);
 	}
-	@DeleteMapping("/{libraryId}/book/borrower")
-	public void deleteBorrower(@PathVariable Long libraryId, @PathVariable Long borrowerId)
+	@DeleteMapping("/book/borrower/{borrowerId}")
+	public void deleteBorrower(@PathVariable Long borrowerId)
 	{
-		log.info("Deleting borrower: {} for library: {}", borrowerId, libraryId);
+		log.info("Deleting borrower: {} for library: {}", borrowerId);
 		
-		libraryManagementService.deleteBorrower(libraryId, borrowerId);
+		libraryManagementService.deleteBorrower(borrowerId);
 	}
-	@DeleteMapping("/book/{bookId}/checkout")
-	public void deleteCheckout(@PathVariable Long libraryId, @PathVariable Long checkoutId)
+	@DeleteMapping("/checkout/{checkoutId}")
+	public void deleteCheckout(@PathVariable Long checkoutId)
 	{
-		log.info("Deleting checkout: {} for library: {}", checkoutId, libraryId);
+		log.info("Deleting checkout: {} for library: {}", checkoutId);
 		
-		libraryManagementService.deleteCheckout(libraryId, checkoutId);
+		libraryManagementService.deleteCheckout(checkoutId);
 	}
 	
 	

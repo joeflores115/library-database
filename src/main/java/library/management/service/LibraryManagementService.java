@@ -10,6 +10,8 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import library.management.controller.error.GlobalErrorHandler.NoCopiesAvailableException;
 import library.management.controller.model.LibraryManagementData;
 import library.management.controller.model.LibraryManagementData.BookData;
 import library.management.controller.model.LibraryManagementData.BorrowerData;
@@ -22,8 +24,10 @@ import library.management.entity.Book;
 import library.management.entity.Borrower;
 import library.management.entity.Checkout;
 import library.management.entity.Libraries;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class LibraryManagementService {
 	
 	@Autowired
@@ -179,7 +183,7 @@ public class LibraryManagementService {
 		Borrower borrower = findBorrowerById(borrowerId);
 		if(book.getQuantity() <= 0)
 		{
-			throw new IllegalStateException("No copies available");
+			throw new NoCopiesAvailableException("No copies available for book: " + book.getTitle());
 		}
 		book.setQuantity(book.getQuantity() - 1);
 		
@@ -248,14 +252,14 @@ public class LibraryManagementService {
 		}
 		return result;
 	}
-
+	
 	@Transactional(readOnly=true)
 	public BookData retrieveBook(Long libraryId, Long bookId) {
 		Book book = findBookById(bookId);
 		BookData bookData = new BookData(book);
 		return bookData;
 	}
-
+	@Transactional(readOnly=true)
 	public List<BorrowerData> retrieveAllBorrowers(Long libraryId) {
 		List<Borrower> borrowerEntities = BorrowerDao.findAll();
 		List<BorrowerData> result = new LinkedList<>();
@@ -266,13 +270,13 @@ public class LibraryManagementService {
 		}
 		return result;
 	}
-
+	@Transactional(readOnly=true)
 	public BorrowerData retrieveBorrower(Long libraryId, Long borrowerId) {
 		Borrower borrower = findBorrowerById(borrowerId);
 		BorrowerData borrowerData = new BorrowerData(borrower);
 		return borrowerData;
 	}
-
+	@Transactional(readOnly=true)
 	public List<CheckoutData> retrieveAllCheckouts(Long libraryId) {
 		List<Checkout> checkoutEntities = CheckoutDao.findAll();
 		List<CheckoutData> result = new LinkedList<>();
@@ -283,7 +287,7 @@ public class LibraryManagementService {
 		}
 		return result;
 	}
-
+	@Transactional(readOnly=true)
 	public CheckoutData retrieveCheckout(Long libraryId, Long checkoutId) {
 		Checkout checkout = CheckoutDao.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
@@ -292,25 +296,34 @@ public class LibraryManagementService {
 		
 		return checkoutData;
 	}
-
+	@Transactional(readOnly = false)
 	public void deleteLibrary(Long libraryId) {
-		Libraries library = findLibraryById(libraryId);
-		libraryManagementDao.delete(library);
-	}
+		 Libraries library = findLibraryById(libraryId);
+		    log.info("Deleting library: {} with {} books", libraryId, library.getBooks().size());
 
+		    for (Book book : library.getBooks()) {
+		        log.info("Clearing {} checkouts from book: {}", book.getCheckouts().size(), book.getTitle());
+		        CheckoutDao.deleteAll(book.getCheckouts());
+		        book.getCheckouts().clear();
+		    }
+
+		    libraryManagementDao.delete(library);
+		    log.info("Library {} deleted", libraryId);
+	}
+	@Transactional(readOnly = false)
 	public void deleteBook(Long libraryId, Long bookId) {
 		Libraries library = findLibraryById(libraryId);
 		Book book = findBookById(bookId);
 		library.getBooks().remove(book);
 		BookDao.delete(book);
 	}
-
-	public void deleteBorrower(Long libraryId, Long borrowerId) {
+	@Transactional(readOnly = false)
+	public void deleteBorrower(Long borrowerId) {
 		Borrower borrower = findBorrowerById(borrowerId);
 		BorrowerDao.delete(borrower);
 	}
-
-	public void deleteCheckout(Long libraryId, Long checkoutId) {
+	@Transactional(readOnly = false)
+	public void deleteCheckout(Long checkoutId) {
 		Checkout checkout = CheckoutDao.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
