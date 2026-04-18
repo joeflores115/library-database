@@ -23,7 +23,7 @@ import library.management.dao.LibraryManagementDao;
 import library.management.entity.Book;
 import library.management.entity.Borrower;
 import library.management.entity.Checkout;
-import library.management.entity.Libraries;
+import library.management.entity.Library;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -34,13 +34,13 @@ public class LibraryManagementService {
 	private LibraryManagementDao libraryManagementDao;
 	
 	@Autowired
-	private LibraryManagementBookDao BookDao;
+	private LibraryManagementBookDao bookDao;
 	
 	@Autowired
-	private LibraryManagementBorrowerDao BorrowerDao;
+	private LibraryManagementBorrowerDao borrowerDao;
 	
 	@Autowired
-	private LibraryManagementCheckoutDao CheckoutDao;
+	private LibraryManagementCheckoutDao checkoutDao;
 	
 	//***********************************************	
 //Following will be the methods to save a library, book, borrower and checkout
@@ -48,18 +48,18 @@ public class LibraryManagementService {
 	@Transactional(readOnly = false)
 	public LibraryManagementData saveLibrary(LibraryManagementData libraryData)
 	{
-		Libraries library=findOrCreateLibrary(libraryData.getLibraryId());
+		Library library=findOrCreateLibrary(libraryData.getLibraryId());
 		
 		copyLibraryFields(library, libraryData);
 		
-		Libraries dbLibrary=libraryManagementDao.save(library);
+		Library dbLibrary=libraryManagementDao.save(library);
 		
 		
 		return new LibraryManagementData(dbLibrary);
 	}
 
 	@Transactional(readOnly = false)
-	private void copyLibraryFields(Libraries library, LibraryManagementData libraryData)
+	private void copyLibraryFields(Library library, LibraryManagementData libraryData)
 	{
 		library.setLibraryId(libraryData.getLibraryId());
 		library.setName(libraryData.getName());
@@ -70,11 +70,11 @@ public class LibraryManagementService {
 		library.setPhone(libraryData.getPhone());
 	}
 
-	private Libraries findOrCreateLibrary(Long libraryId) {
+	private Library findOrCreateLibrary(Long libraryId) {
 		if(Objects.isNull(libraryId))
 		{
 			
-			return new Libraries();
+			return new Library();
 		}
 		else
 		{
@@ -83,7 +83,7 @@ public class LibraryManagementService {
 		
 	}
 
-	private Libraries findLibraryById(Long libraryId) {
+	private Library findLibraryById(Long libraryId) {
 		
 		return libraryManagementDao.findById(libraryId).orElseThrow(
 				()-> new NoSuchElementException("Library with ID="
@@ -93,14 +93,14 @@ public class LibraryManagementService {
 	@Transactional(readOnly = false)
 	public BookData saveBook(Long libraryId, BookData bookData) {
 		
-		Libraries library = findLibraryById(libraryId);
+		Library library = findLibraryById(libraryId);
 		Long bookId = bookData.getBookId();
 		Book book= findOrCreateBook(bookId);
 		copyBookFields(book, bookData);
 		book.setLibrary(library);
 		library.getBooks().add(book);
 		
-		Book dbBook = BookDao.save(book);
+		Book dbBook = bookDao.save(book);
 		
 		
 		return new BookData(dbBook);
@@ -130,7 +130,7 @@ public class LibraryManagementService {
 
 	private Book findBookById(Long bookId) {
 		
-		return BookDao.findById(bookId).orElseThrow(
+		return bookDao.findById(bookId).orElseThrow(
 				()-> new NoSuchElementException("Book with ID="
 						+ bookId + " not found"));
 	}
@@ -147,7 +147,7 @@ public class LibraryManagementService {
 		Long borrowerId = borrowerData.getBorrowerId();
 		Borrower borrower = findOrCreateBorrower(borrowerId);
 		copyBorrowerFields(borrower, borrowerData);
-		Borrower dbBorrower = BorrowerDao.save(borrower);
+		Borrower dbBorrower = borrowerDao.save(borrower);
 		
 		return new BorrowerData(dbBorrower);
 	}
@@ -172,7 +172,7 @@ public class LibraryManagementService {
 	}
 	
 	private Borrower findBorrowerById(Long borrowerId) {
-		return BorrowerDao.findById(borrowerId).orElseThrow(
+		return borrowerDao.findById(borrowerId).orElseThrow(
 				()-> new NoSuchElementException("Borrower with ID="
 						+ borrowerId + " not found"));
 	}
@@ -193,15 +193,15 @@ public class LibraryManagementService {
 		checkout.setCheckoutDate(LocalDate.now());
 		checkout.setDueDate(LocalDate.now().plusDays(14));
 		checkout.setReturnDate(null);
-		BookDao.save(book);
-		Checkout dbCheckout = CheckoutDao.save(checkout);
+		bookDao.save(book);
+		Checkout dbCheckout = checkoutDao.save(checkout);
 		return new CheckoutData(dbCheckout);
 	}
 
 	
 	@Transactional(readOnly = false)
 	public CheckoutData updateCheckout(Long checkoutId, CheckoutData checkoutData) {
-		Checkout checkout = CheckoutDao.findById(checkoutId).orElseThrow(
+		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
 
@@ -210,7 +210,7 @@ public class LibraryManagementService {
 			checkout.setReturnDate(checkoutData.getReturnDate());
 			Book book = checkout.getBook();
 			book.setQuantity(book.getQuantity() + 1);
-			BookDao.save(book);
+			bookDao.save(book);
 		} else if (checkoutData.getReturnDate() == null && checkout.getReturnDate() != null) {
 			// Logic for undoing a return
 			Book book = checkout.getBook();
@@ -219,20 +219,20 @@ public class LibraryManagementService {
 			}
 			checkout.setReturnDate(null);
 			book.setQuantity(book.getQuantity() - 1);
-			BookDao.save(book);
+			bookDao.save(book);
 		}
 
 		if (checkoutData.getDueDate() != null) {
 			checkout.setDueDate(checkoutData.getDueDate());
 		}
 
-		Checkout dbCheckout = CheckoutDao.save(checkout);
+		Checkout dbCheckout = checkoutDao.save(checkout);
 		return new CheckoutData(dbCheckout);
 	}
 
 	@Transactional(readOnly = false)
 	public CheckoutData returnBook(Long checkoutId) {
-		Checkout checkout = CheckoutDao.findById(checkoutId).orElseThrow(
+		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
 		if(checkout.getReturnDate() != null)
@@ -243,8 +243,8 @@ public class LibraryManagementService {
 		checkout.setReturnDate(LocalDate.now());
 		Book book = checkout.getBook();
 		book.setQuantity(book.getQuantity() + 1);
-		BookDao.save(book);
-		Checkout dbCheckout=CheckoutDao.save(checkout);
+		bookDao.save(book);
+		Checkout dbCheckout=checkoutDao.save(checkout);
 		
 		return new CheckoutData(dbCheckout);
 	}
@@ -253,10 +253,10 @@ public class LibraryManagementService {
 	
 	@Transactional(readOnly=true)
 	public List<LibraryManagementData> retrieveAllLibraries() {
-		List<Libraries> libraryEntities = libraryManagementDao.findAll();
+		List<Library> libraryEntities = libraryManagementDao.findAll();
 		List<LibraryManagementData> result = new LinkedList<>();
 		
-		for(Libraries library: libraryEntities)
+		for(Library library: libraryEntities)
 		{
 			LibraryManagementData libraryData = new LibraryManagementData(library);
 			result.add(libraryData);
@@ -266,7 +266,7 @@ public class LibraryManagementService {
 
 	@Transactional(readOnly=true)
 	public LibraryManagementData retrieveLibrary(Long libraryId) {
-		Libraries library = findLibraryById(libraryId);
+		Library library = findLibraryById(libraryId);
 		LibraryManagementData libraryData = new LibraryManagementData(library);
 
 		return libraryData;
@@ -274,7 +274,7 @@ public class LibraryManagementService {
 
 	@Transactional(readOnly=true)
 	public List<BookData> retrieveAllBooks(Long libraryId) {
-		List<Book> bookEntities = BookDao.findAllByLibraryLibraryId(libraryId);
+		List<Book> bookEntities = bookDao.findAllByLibraryLibraryId(libraryId);
 		List<BookData> result = new LinkedList<>();
 		for(Book book: bookEntities)
 		{
@@ -291,8 +291,8 @@ public class LibraryManagementService {
 		return bookData;
 	}
 	@Transactional(readOnly=true)
-	public List<BorrowerData> retrieveAllBorrowers(Long libraryId) {
-		List<Borrower> borrowerEntities = BorrowerDao.findAll();
+	public List<BorrowerData> retrieveAllBorrowers() {
+		List<Borrower> borrowerEntities = borrowerDao.findAll();
 		List<BorrowerData> result = new LinkedList<>();
 		for(Borrower borrower: borrowerEntities)
 		{
@@ -302,14 +302,14 @@ public class LibraryManagementService {
 		return result;
 	}
 	@Transactional(readOnly=true)
-	public BorrowerData retrieveBorrower(Long libraryId, Long borrowerId) {
+	public BorrowerData retrieveBorrower(Long borrowerId) {
 		Borrower borrower = findBorrowerById(borrowerId);
 		BorrowerData borrowerData = new BorrowerData(borrower);
 		return borrowerData;
 	}
 	@Transactional(readOnly=true)
 	public List<CheckoutData> retrieveAllCheckouts(Long libraryId) {
-		List<Checkout> checkoutEntities = CheckoutDao.findAllByBookLibraryLibraryId(libraryId);
+		List<Checkout> checkoutEntities = checkoutDao.findAllByBookLibraryLibraryId(libraryId);
 		List<CheckoutData> result = new LinkedList<>();
 		for(Checkout checkout: checkoutEntities)
 		{
@@ -320,7 +320,7 @@ public class LibraryManagementService {
 	}
 	@Transactional(readOnly=true)
 	public CheckoutData retrieveCheckout(Long libraryId, Long checkoutId) {
-		Checkout checkout = CheckoutDao.findById(checkoutId).orElseThrow(
+		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
 		CheckoutData checkoutData = new CheckoutData(checkout);
@@ -329,12 +329,12 @@ public class LibraryManagementService {
 	}
 	@Transactional(readOnly = false)
 	public void deleteLibrary(Long libraryId) {
-		 Libraries library = findLibraryById(libraryId);
+		 Library library = findLibraryById(libraryId);
 		    log.info("Deleting library: {} with {} books", libraryId, library.getBooks().size());
 
 		    for (Book book : library.getBooks()) {
 		        log.info("Clearing {} checkouts from book: {}", book.getCheckouts().size(), book.getTitle());
-		        CheckoutDao.deleteAll(book.getCheckouts());
+		        checkoutDao.deleteAll(book.getCheckouts());
 		        book.getCheckouts().clear();
 		    }
 
@@ -343,21 +343,21 @@ public class LibraryManagementService {
 	}
 	@Transactional(readOnly = false)
 	public void deleteBook(Long libraryId, Long bookId) {
-		Libraries library = findLibraryById(libraryId);
+		Library library = findLibraryById(libraryId);
 		Book book = findBookById(bookId);
 		library.getBooks().remove(book);
-		BookDao.delete(book);
+		bookDao.delete(book);
 	}
 	@Transactional(readOnly = false)
 	public void deleteBorrower(Long borrowerId) {
 		Borrower borrower = findBorrowerById(borrowerId);
-		BorrowerDao.delete(borrower);
+		borrowerDao.delete(borrower);
 	}
 	@Transactional(readOnly = false)
 	public void deleteCheckout(Long checkoutId) {
-		Checkout checkout = CheckoutDao.findById(checkoutId).orElseThrow(
+		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
-		CheckoutDao.delete(checkout);
+		checkoutDao.delete(checkout);
 	}	
 }

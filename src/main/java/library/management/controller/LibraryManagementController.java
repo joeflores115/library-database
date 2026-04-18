@@ -24,7 +24,7 @@ import library.management.service.LibraryManagementService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@RequestMapping("/library")
+@RequestMapping("/libraries")
 @RestController
 @Slf4j
 public class LibraryManagementController
@@ -47,7 +47,7 @@ public class LibraryManagementController
 	
 	
 	
-	@PostMapping("/{libraryId}/book")
+	@PostMapping("/{libraryId}/books")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public BookData insertBook(@PathVariable Long libraryId, @Valid @RequestBody BookData bookData)
 	{
@@ -57,9 +57,9 @@ public class LibraryManagementController
 	}
 	
 	
-	@PostMapping("/{libraryId}/book/borrower")
+	@PostMapping("/borrowers")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public BorrowerData insertBorrower(@PathVariable Long libraryId, @Valid @RequestBody BorrowerData borrowerData)
+	public BorrowerData insertBorrower(@Valid @RequestBody BorrowerData borrowerData)
 	{
 		log.info("Creating borrower: {}", borrowerData);
 		
@@ -67,7 +67,7 @@ public class LibraryManagementController
 	}
 	
 	
-	@PostMapping("/book/{bookId}/checkout/{borrowerId}")
+	@PostMapping("/checkouts/books/{bookId}/borrowers/{borrowerId}")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public CheckoutData bookCheckout(@PathVariable Long bookId, @PathVariable Long borrowerId ,@Valid @RequestBody CheckoutData checkoutData)
 	{
@@ -98,7 +98,7 @@ public class LibraryManagementController
 		return libraryManagementService.retrieveLibrary(libraryId);
 	}
 	
-	@GetMapping("/{libraryId}/book")
+	@GetMapping("/{libraryId}/books")
 	public List<BookData> retrieveAllBooks(@PathVariable Long libraryId)
 	{
 		log.info("Retrieving all books for library: {}", libraryId);
@@ -106,7 +106,7 @@ public class LibraryManagementController
 		return libraryManagementService.retrieveAllBooks(libraryId);
 	}
 	
-	@GetMapping("/{libraryId}/book/{bookId}")
+	@GetMapping("/{libraryId}/books/{bookId}")
 	public BookData retrieveBook(@PathVariable Long libraryId, @PathVariable Long bookId)
 	{
 		log.info("Retrieving book: {} for library: {}", bookId, libraryId);
@@ -114,23 +114,23 @@ public class LibraryManagementController
 		return libraryManagementService.retrieveBook(libraryId, bookId);
 	}
 	
-	@GetMapping("/{libraryId}/book/borrower")
-	public List<BorrowerData> retrieveAllBorrowers(@PathVariable Long libraryId)
+	@GetMapping("/borrowers")
+	public List<BorrowerData> retrieveAllBorrowers()
 	{
-		log.info("Retrieving all borrowers for library: {}", libraryId);
+		log.info("Retrieving all borrowers");
 		
-		return libraryManagementService.retrieveAllBorrowers(libraryId);
+		return libraryManagementService.retrieveAllBorrowers();
 	}
 	
-	@GetMapping("/{libraryId}/book/borrower/{borrowerId}")
-	public BorrowerData retrieveBorrower(@PathVariable Long libraryId, @PathVariable Long borrowerId)
+	@GetMapping("/borrowers/{borrowerId}")
+	public BorrowerData retrieveBorrower(@PathVariable Long borrowerId)
 	{
-		log.info("Retrieving borrower: {} for library: {}", borrowerId, libraryId);
+		log.info("Retrieving borrower: {}", borrowerId);
 		
-		return libraryManagementService.retrieveBorrower(libraryId, borrowerId);
+		return libraryManagementService.retrieveBorrower(borrowerId);
 	}
 	
-	@GetMapping("/{libraryId}/book/checkout")
+	@GetMapping("/{libraryId}/checkouts")
 	public List<CheckoutData> retrieveAllCheckouts(@PathVariable Long libraryId)
 	{
 		log.info("Retrieving all checkouts for library: {}", libraryId);
@@ -138,7 +138,7 @@ public class LibraryManagementController
 		return libraryManagementService.retrieveAllCheckouts(libraryId);
 	}
 	
-	@GetMapping("/{libraryId}/book/checkout/{checkoutId}")
+	@GetMapping("/{libraryId}/checkouts/{checkoutId}")
 	public CheckoutData retrieveCheckout(@PathVariable Long libraryId, @PathVariable Long checkoutId)
 	{
 		log.info("Retrieving checkout: {} for library: {}", checkoutId, libraryId);
@@ -158,7 +158,7 @@ public class LibraryManagementController
 		
 		return libraryManagementService.saveLibrary(libraryData);
 	}
-	@PutMapping("/{libraryId}/book/{bookId}")
+	@PutMapping("/{libraryId}/books/{bookId}")
 	public BookData updateBook(@PathVariable Long libraryId, @PathVariable Long bookId ,@Valid @RequestBody BookData bookData)
 	{
 		bookData.setBookId(bookId);
@@ -166,15 +166,15 @@ public class LibraryManagementController
 		
 		return libraryManagementService.saveBook(libraryId, bookData);
 	}
-	@PutMapping("/{libraryId}/book/borrower/{borrowerId}")
-	public BorrowerData updateBorrower(@PathVariable Long libraryId, @PathVariable Long borrowerId ,@Valid @RequestBody BorrowerData borrowerData)
+	@PutMapping("/borrowers/{borrowerId}")
+	public BorrowerData updateBorrower(@PathVariable Long borrowerId ,@Valid @RequestBody BorrowerData borrowerData)
 	{
 		borrowerData.setBorrowerId(borrowerId);
 		log.info("Updating borrower: {}", borrowerData);
 		
 		return libraryManagementService.saveBorrower(borrowerData);
 	}
-	@PutMapping("/book/{bookId}/checkout/{checkoutId}")
+	@PutMapping("/checkouts/{checkoutId}")
 	public CheckoutData updateCheckout(@PathVariable Long checkoutId ,@Valid @RequestBody CheckoutData checkoutData)
 	{
 		checkoutData.setCheckoutId(checkoutId);
@@ -203,24 +203,24 @@ public class LibraryManagementController
 		
 		libraryManagementService.deleteLibrary(libraryId);
 	}
-	@DeleteMapping("/{libraryId}/book/{bookId}")
+	@DeleteMapping("/{libraryId}/books/{bookId}")
 	public void deleteBook(@PathVariable Long libraryId, @PathVariable Long bookId)
 	{
 		log.info("Deleting book: {} for library: {}", bookId, libraryId);
 		
 		libraryManagementService.deleteBook(libraryId, bookId);
 	}
-	@DeleteMapping("/book/borrower/{borrowerId}")
+	@DeleteMapping("/borrowers/{borrowerId}")
 	public void deleteBorrower(@PathVariable Long borrowerId)
 	{
-		log.info("Deleting borrower: {} for library: {}", borrowerId);
+		log.info("Deleting borrower: {}", borrowerId);
 		
 		libraryManagementService.deleteBorrower(borrowerId);
 	}
-	@DeleteMapping("/checkout/{checkoutId}")
+	@DeleteMapping("/checkouts/{checkoutId}")
 	public void deleteCheckout(@PathVariable Long checkoutId)
 	{
-		log.info("Deleting checkout: {} for library: {}", checkoutId);
+		log.info("Deleting checkout: {}", checkoutId);
 		
 		libraryManagementService.deleteCheckout(checkoutId);
 	}
