@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import library.management.controller.error.GlobalErrorHandler.NoCopiesAvailableException;
+import library.management.exception.NoCopiesAvailableException;
 import library.management.controller.model.LibraryManagementData;
 import library.management.controller.model.LibraryManagementData.BookData;
 import library.management.controller.model.LibraryManagementData.BorrowerData;
@@ -331,12 +331,6 @@ public class LibraryManagementService {
 	public void deleteLibrary(Long libraryId) {
 		 Library library = findLibraryById(libraryId);
 		    log.info("Deleting library: {} with {} books", libraryId, library.getBooks().size());
-
-		    for (Book book : library.getBooks()) {
-		        log.info("Clearing {} checkouts from book: {}", book.getCheckouts().size(), book.getTitle());
-		        checkoutDao.deleteAll(book.getCheckouts());
-		        book.getCheckouts().clear();
-		    }
 
 		    libraryManagementDao.delete(library);
 		    log.info("Library {} deleted", libraryId);

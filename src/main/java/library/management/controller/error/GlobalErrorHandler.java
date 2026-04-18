@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import library.management.exception.NoCopiesAvailableException;
 import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
@@ -28,11 +29,6 @@ public class GlobalErrorHandler
 	}
 	
 	
-	public static class NoCopiesAvailableException extends RuntimeException {
-	    public NoCopiesAvailableException(String message) {
-	        super(message);
-	    }
-	}
 	@ExceptionHandler(NoCopiesAvailableException.class)
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
 	public Map<String, String> handleNoCopiesAvailable(NoCopiesAvailableException ex) 

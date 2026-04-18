@@ -15,7 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import library.management.controller.error.GlobalErrorHandler.NoCopiesAvailableException;
+import library.management.exception.NoCopiesAvailableException;
 import library.management.controller.model.LibraryManagementData.CheckoutData;
 import library.management.dao.LibraryManagementBookDao;
 import library.management.dao.LibraryManagementBorrowerDao;
