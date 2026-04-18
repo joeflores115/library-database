@@ -15,7 +15,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-
 @Entity
 @Data
 public class Book extends AbstractAuditingEntity {
@@ -39,9 +38,7 @@ public class Book extends AbstractAuditingEntity {
 	@JoinColumn(name = "library_id", nullable = false)
 	private Library library;
 	
-	
 	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
 	private Set<Checkout> checkouts = new HashSet<>();
-
 }

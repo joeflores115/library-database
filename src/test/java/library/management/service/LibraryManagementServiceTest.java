@@ -16,11 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import library.management.exception.NoCopiesAvailableException;
-import library.management.controller.model.LibraryManagementData.CheckoutData;
-import library.management.dao.LibraryManagementBookDao;
-import library.management.dao.LibraryManagementBorrowerDao;
-import library.management.dao.LibraryManagementCheckoutDao;
-import library.management.dao.LibraryManagementDao;
+import library.management.dto.CheckoutDto;
+import library.management.repository.BookRepository;
+import library.management.repository.BorrowerRepository;
+import library.management.repository.CheckoutRepository;
+import library.management.repository.LibraryRepository;
 import library.management.entity.Book;
 import library.management.entity.Borrower;
 import library.management.entity.Checkout;
@@ -29,16 +29,16 @@ import library.management.entity.Checkout;
 public class LibraryManagementServiceTest {
 
     @Mock
-    private LibraryManagementBookDao bookDao;
+    private BookRepository bookRepository;
 
     @Mock
-    private LibraryManagementBorrowerDao borrowerDao;
+    private BorrowerRepository borrowerRepository;
 
     @Mock
-    private LibraryManagementCheckoutDao checkoutDao;
+    private CheckoutRepository checkoutRepository;
 
     @Mock
-    private LibraryManagementDao libraryManagementDao;
+    private LibraryRepository libraryManagementRepository;
 
     @InjectMocks
     private LibraryManagementService libraryManagementService;
@@ -55,16 +55,16 @@ public class LibraryManagementServiceTest {
         Borrower borrower = new Borrower();
         borrower.setBorrowerId(borrowerId);
 
-        when(bookDao.findById(bookId)).thenReturn(Optional.of(book));
-        when(borrowerDao.findById(borrowerId)).thenReturn(Optional.of(borrower));
-        when(checkoutDao.save(any(Checkout.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+        when(borrowerRepository.findById(borrowerId)).thenReturn(Optional.of(borrower));
+        when(checkoutRepository.save(any(Checkout.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        CheckoutData result = libraryManagementService.saveCheckout(bookId, borrowerId, new CheckoutData());
+        CheckoutDto result = libraryManagementService.saveCheckout(bookId, borrowerId);
 
         assertNotNull(result);
         assertEquals(4, book.getQuantity());
-        verify(bookDao).save(book);
-        verify(checkoutDao).save(any(Checkout.class));
+        verify(bookRepository).save(book);
+        verify(checkoutRepository).save(any(Checkout.class));
     }
 
     @Test
@@ -75,11 +75,11 @@ public class LibraryManagementServiceTest {
         book.setBookId(bookId);
         book.setQuantity(0);
 
-        when(bookDao.findById(bookId)).thenReturn(Optional.of(book));
-        when(borrowerDao.findById(borrowerId)).thenReturn(Optional.of(new Borrower()));
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+        when(borrowerRepository.findById(borrowerId)).thenReturn(Optional.of(new Borrower()));
 
         assertThrows(NoCopiesAvailableException.class, () -> {
-            libraryManagementService.saveCheckout(bookId, borrowerId, new CheckoutData());
+            libraryManagementService.saveCheckout(bookId, borrowerId);
         });
     }
 }

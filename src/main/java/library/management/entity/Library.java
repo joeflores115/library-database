@@ -25,8 +25,6 @@ public class Library extends AbstractAuditingEntity {
 	private String zip;
 	private String phone;
 	
-	// Add any additional fields or relationships as needed
 	@OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Book> books = new HashSet<>();
-	
 }

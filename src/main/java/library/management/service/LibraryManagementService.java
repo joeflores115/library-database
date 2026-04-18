@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import library.management.exception.NoCopiesAvailableException;
-import library.management.controller.model.LibraryManagementData;
-import library.management.controller.model.LibraryManagementData.BookData;
-import library.management.controller.model.LibraryManagementData.BorrowerData;
-import library.management.controller.model.LibraryManagementData.CheckoutData;
-import library.management.dao.LibraryManagementBookDao;
-import library.management.dao.LibraryManagementBorrowerDao;
-import library.management.dao.LibraryManagementCheckoutDao;
-import library.management.dao.LibraryManagementDao;
+import library.management.dto.LibraryDto;
+import library.management.dto.BookDto;
+import library.management.dto.BorrowerDto;
+import library.management.dto.CheckoutDto;
+import library.management.repository.BookRepository;
+import library.management.repository.BorrowerRepository;
+import library.management.repository.CheckoutRepository;
+import library.management.repository.LibraryRepository;
 import library.management.entity.Book;
 import library.management.entity.Borrower;
 import library.management.entity.Checkout;
@@ -31,35 +31,32 @@ import lombok.extern.slf4j.Slf4j;
 public class LibraryManagementService {
 	
 	@Autowired
-	private LibraryManagementDao libraryManagementDao;
+	private LibraryRepository libraryRepository;
 	
 	@Autowired
-	private LibraryManagementBookDao bookDao;
+	private BookRepository bookRepository;
 	
 	@Autowired
-	private LibraryManagementBorrowerDao borrowerDao;
+	private BorrowerRepository borrowerRepository;
 	
 	@Autowired
-	private LibraryManagementCheckoutDao checkoutDao;
+	private CheckoutRepository checkoutRepository;
 	
-	//***********************************************	
-//Following will be the methods to save a library, book, borrower and checkout
-//***********************************************	
-	@Transactional(readOnly = false)
-	public LibraryManagementData saveLibrary(LibraryManagementData libraryData)
+	@Transactional
+	public LibraryDto saveLibrary(LibraryDto libraryData)
 	{
 		Library library=findOrCreateLibrary(libraryData.getLibraryId());
 		
 		copyLibraryFields(library, libraryData);
 		
-		Library dbLibrary=libraryManagementDao.save(library);
+		Library dbLibrary=libraryRepository.save(library);
 		
 		
-		return new LibraryManagementData(dbLibrary);
+		return new LibraryDto(dbLibrary);
 	}
 
-	@Transactional(readOnly = false)
-	private void copyLibraryFields(Library library, LibraryManagementData libraryData)
+	@Transactional
+	private void copyLibraryFields(Library library, LibraryDto libraryData)
 	{
 		library.setLibraryId(libraryData.getLibraryId());
 		library.setName(libraryData.getName());
@@ -85,13 +82,13 @@ public class LibraryManagementService {
 
 	private Library findLibraryById(Long libraryId) {
 		
-		return libraryManagementDao.findById(libraryId).orElseThrow(
+		return libraryRepository.findById(libraryId).orElseThrow(
 				()-> new NoSuchElementException("Library with ID="
 						+ libraryId + " not found"));
 	}
 
-	@Transactional(readOnly = false)
-	public BookData saveBook(Long libraryId, BookData bookData) {
+	@Transactional
+	public BookDto saveBook(Long libraryId, BookDto bookData) {
 		
 		Library library = findLibraryById(libraryId);
 		Long bookId = bookData.getBookId();
@@ -100,14 +97,14 @@ public class LibraryManagementService {
 		book.setLibrary(library);
 		library.getBooks().add(book);
 		
-		Book dbBook = bookDao.save(book);
+		Book dbBook = bookRepository.save(book);
 		
 		
-		return new BookData(dbBook);
+		return new BookDto(dbBook);
 	}
 
 	
-	private void copyBookFields(Book book, BookData bookData) 
+	private void copyBookFields(Book book, BookDto bookData)
 	{	
 		book.setBookId(bookData.getBookId());
 		book.setTitle(bookData.getTitle());
@@ -130,29 +127,22 @@ public class LibraryManagementService {
 
 	private Book findBookById(Long bookId) {
 		
-		return bookDao.findById(bookId).orElseThrow(
+		return bookRepository.findById(bookId).orElseThrow(
 				()-> new NoSuchElementException("Book with ID="
 						+ bookId + " not found"));
 	}
 
-	@Transactional(readOnly = false)
-	public BorrowerData saveBorrower(BorrowerData borrowerData) {
-		//borrower might be a little different
-		//because it is not associated with a library
-		//but with a book
-		//this method will be to create a borrower for the first time
-		//if the already exists we will need to say so
-		//and not create a new one
-		//we will have another method to update the borrower
+	@Transactional
+	public BorrowerDto saveBorrower(BorrowerDto borrowerData) {
 		Long borrowerId = borrowerData.getBorrowerId();
 		Borrower borrower = findOrCreateBorrower(borrowerId);
 		copyBorrowerFields(borrower, borrowerData);
-		Borrower dbBorrower = borrowerDao.save(borrower);
+		Borrower dbBorrower = borrowerRepository.save(borrower);
 		
-		return new BorrowerData(dbBorrower);
+		return new BorrowerDto(dbBorrower);
 	}
 
-	private void copyBorrowerFields(Borrower borrower, BorrowerData borrowerData) {
+	private void copyBorrowerFields(Borrower borrower, BorrowerDto borrowerData) {
 		borrower.setBorrowerId(borrowerData.getBorrowerId());
 		borrower.setName(borrowerData.getName());
 		borrower.setAddress(borrowerData.getAddress());
@@ -172,13 +162,13 @@ public class LibraryManagementService {
 	}
 	
 	private Borrower findBorrowerById(Long borrowerId) {
-		return borrowerDao.findById(borrowerId).orElseThrow(
+		return borrowerRepository.findById(borrowerId).orElseThrow(
 				()-> new NoSuchElementException("Borrower with ID="
 						+ borrowerId + " not found"));
 	}
 
-	@Transactional(readOnly = false)
-	public CheckoutData saveCheckout(Long bookId, Long borrowerId, CheckoutData checkoutData) {
+	@Transactional
+	public CheckoutDto saveCheckout(Long bookId, Long borrowerId) {
 		Book book = findBookById(bookId);
 		Borrower borrower = findBorrowerById(borrowerId);
 		if(book.getQuantity() <= 0)
@@ -193,46 +183,44 @@ public class LibraryManagementService {
 		checkout.setCheckoutDate(LocalDate.now());
 		checkout.setDueDate(LocalDate.now().plusDays(14));
 		checkout.setReturnDate(null);
-		bookDao.save(book);
-		Checkout dbCheckout = checkoutDao.save(checkout);
-		return new CheckoutData(dbCheckout);
+		bookRepository.save(book);
+		Checkout dbCheckout = checkoutRepository.save(checkout);
+		return new CheckoutDto(dbCheckout);
 	}
 
 	
-	@Transactional(readOnly = false)
-	public CheckoutData updateCheckout(Long checkoutId, CheckoutData checkoutData) {
-		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
+	@Transactional
+	public CheckoutDto updateCheckout(Long checkoutId, CheckoutDto checkoutData) {
+		Checkout checkout = checkoutRepository.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
 
-		// Logic for returning a book if returnDate is set now
 		if (checkoutData.getReturnDate() != null && checkout.getReturnDate() == null) {
 			checkout.setReturnDate(checkoutData.getReturnDate());
 			Book book = checkout.getBook();
 			book.setQuantity(book.getQuantity() + 1);
-			bookDao.save(book);
+			bookRepository.save(book);
 		} else if (checkoutData.getReturnDate() == null && checkout.getReturnDate() != null) {
-			// Logic for undoing a return
 			Book book = checkout.getBook();
 			if (book.getQuantity() <= 0) {
 				throw new NoCopiesAvailableException("Cannot undo return: No copies available for book: " + book.getTitle());
 			}
 			checkout.setReturnDate(null);
 			book.setQuantity(book.getQuantity() - 1);
-			bookDao.save(book);
+			bookRepository.save(book);
 		}
 
 		if (checkoutData.getDueDate() != null) {
 			checkout.setDueDate(checkoutData.getDueDate());
 		}
 
-		Checkout dbCheckout = checkoutDao.save(checkout);
-		return new CheckoutData(dbCheckout);
+		Checkout dbCheckout = checkoutRepository.save(checkout);
+		return new CheckoutDto(dbCheckout);
 	}
 
-	@Transactional(readOnly = false)
-	public CheckoutData returnBook(Long checkoutId) {
-		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
+	@Transactional
+	public CheckoutDto returnBook(Long checkoutId) {
+		Checkout checkout = checkoutRepository.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
 		if(checkout.getReturnDate() != null)
@@ -243,115 +231,114 @@ public class LibraryManagementService {
 		checkout.setReturnDate(LocalDate.now());
 		Book book = checkout.getBook();
 		book.setQuantity(book.getQuantity() + 1);
-		bookDao.save(book);
-		Checkout dbCheckout=checkoutDao.save(checkout);
+		bookRepository.save(book);
+		Checkout dbCheckout=checkoutRepository.save(checkout);
 		
-		return new CheckoutData(dbCheckout);
+		return new CheckoutDto(dbCheckout);
 	}
 
-	//Following will be the methods to retrieve a library, book, borrower and checkout
 	
 	@Transactional(readOnly=true)
-	public List<LibraryManagementData> retrieveAllLibraries() {
-		List<Library> libraryEntities = libraryManagementDao.findAll();
-		List<LibraryManagementData> result = new LinkedList<>();
+	public List<LibraryDto> retrieveAllLibraries() {
+		List<Library> libraryEntities = libraryRepository.findAll();
+		List<LibraryDto> result = new LinkedList<>();
 		
 		for(Library library: libraryEntities)
 		{
-			LibraryManagementData libraryData = new LibraryManagementData(library);
+			LibraryDto libraryData = new LibraryDto(library);
 			result.add(libraryData);
 		}
 		return result;
 	}
 
 	@Transactional(readOnly=true)
-	public LibraryManagementData retrieveLibrary(Long libraryId) {
+	public LibraryDto retrieveLibrary(Long libraryId) {
 		Library library = findLibraryById(libraryId);
-		LibraryManagementData libraryData = new LibraryManagementData(library);
+		LibraryDto libraryData = new LibraryDto(library);
 
 		return libraryData;
 	}
 
 	@Transactional(readOnly=true)
-	public List<BookData> retrieveAllBooks(Long libraryId) {
-		List<Book> bookEntities = bookDao.findAllByLibraryLibraryId(libraryId);
-		List<BookData> result = new LinkedList<>();
+	public List<BookDto> retrieveAllBooks(Long libraryId) {
+		List<Book> bookEntities = bookRepository.findAllByLibraryLibraryId(libraryId);
+		List<BookDto> result = new LinkedList<>();
 		for(Book book: bookEntities)
 		{
-			BookData bookData = new BookData(book);
+			BookDto bookData = new BookDto(book);
 			result.add(bookData);
 		}
 		return result;
 	}
 	
 	@Transactional(readOnly=true)
-	public BookData retrieveBook(Long libraryId, Long bookId) {
+	public BookDto retrieveBook(Long libraryId, Long bookId) {
 		Book book = findBookById(bookId);
-		BookData bookData = new BookData(book);
+		BookDto bookData = new BookDto(book);
 		return bookData;
 	}
 	@Transactional(readOnly=true)
-	public List<BorrowerData> retrieveAllBorrowers() {
-		List<Borrower> borrowerEntities = borrowerDao.findAll();
-		List<BorrowerData> result = new LinkedList<>();
+	public List<BorrowerDto> retrieveAllBorrowers() {
+		List<Borrower> borrowerEntities = borrowerRepository.findAll();
+		List<BorrowerDto> result = new LinkedList<>();
 		for(Borrower borrower: borrowerEntities)
 		{
-			BorrowerData borrowerData = new BorrowerData(borrower);
+			BorrowerDto borrowerData = new BorrowerDto(borrower);
 			result.add(borrowerData);
 		}
 		return result;
 	}
 	@Transactional(readOnly=true)
-	public BorrowerData retrieveBorrower(Long borrowerId) {
+	public BorrowerDto retrieveBorrower(Long borrowerId) {
 		Borrower borrower = findBorrowerById(borrowerId);
-		BorrowerData borrowerData = new BorrowerData(borrower);
+		BorrowerDto borrowerData = new BorrowerDto(borrower);
 		return borrowerData;
 	}
 	@Transactional(readOnly=true)
-	public List<CheckoutData> retrieveAllCheckouts(Long libraryId) {
-		List<Checkout> checkoutEntities = checkoutDao.findAllByBookLibraryLibraryId(libraryId);
-		List<CheckoutData> result = new LinkedList<>();
+	public List<CheckoutDto> retrieveAllCheckouts(Long libraryId) {
+		List<Checkout> checkoutEntities = checkoutRepository.findAllByBookLibraryLibraryId(libraryId);
+		List<CheckoutDto> result = new LinkedList<>();
 		for(Checkout checkout: checkoutEntities)
 		{
-			CheckoutData checkoutData = new CheckoutData(checkout);
+			CheckoutDto checkoutData = new CheckoutDto(checkout);
 			result.add(checkoutData);
 		}
 		return result;
 	}
 	@Transactional(readOnly=true)
-	public CheckoutData retrieveCheckout(Long libraryId, Long checkoutId) {
-		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
+	public CheckoutDto retrieveCheckout(Long libraryId, Long checkoutId) {
+		Checkout checkout = checkoutRepository.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
-		CheckoutData checkoutData = new CheckoutData(checkout);
+		CheckoutDto checkoutData = new CheckoutDto(checkout);
 		
 		return checkoutData;
 	}
-	@Transactional(readOnly = false)
+	@Transactional
 	public void deleteLibrary(Long libraryId) {
 		 Library library = findLibraryById(libraryId);
 		    log.info("Deleting library: {} with {} books", libraryId, library.getBooks().size());
 
-		    libraryManagementDao.delete(library);
+		    libraryRepository.delete(library);
 		    log.info("Library {} deleted", libraryId);
 	}
-	@Transactional(readOnly = false)
+	@Transactional
 	public void deleteBook(Long libraryId, Long bookId) {
 		Library library = findLibraryById(libraryId);
 		Book book = findBookById(bookId);
 		library.getBooks().remove(book);
-		bookDao.delete(book);
+		bookRepository.delete(book);
 	}
-	@Transactional(readOnly = false)
+	@Transactional
 	public void deleteBorrower(Long borrowerId) {
 		Borrower borrower = findBorrowerById(borrowerId);
-		borrowerDao.delete(borrower);
+		borrowerRepository.delete(borrower);
 	}
-	@Transactional(readOnly = false)
+	@Transactional
 	public void deleteCheckout(Long checkoutId) {
-		Checkout checkout = checkoutDao.findById(checkoutId).orElseThrow(
+		Checkout checkout = checkoutRepository.findById(checkoutId).orElseThrow(
 				()-> new NoSuchElementException("Checkout with ID="
 						+ checkoutId + " not found"));
-		checkoutDao.delete(checkout);
+		checkoutRepository.delete(checkout);
 	}	
 }

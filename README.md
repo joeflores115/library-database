@@ -76,3 +76,34 @@ mvn test
 - **Soft Deletion:** Implement a "trash" system instead of hard-deleting historical data.
 - **Dockerization:** Create a `Dockerfile` and `docker-compose.yaml` for one-command deployment.
 - **Frontend Client:** Build a React or Vue.js dashboard to consume this API.
+
+---
+
+## 👨‍🏫 Student Feedback & Refactor Summary (Teaching Review)
+
+This project underwent a comprehensive refactor to move it from a "beginner student" state to a "professional portfolio" state. Below are the key teaching points from that review:
+
+### 1. Separation of Concerns (DTO vs Entity)
+- **Problem:** Originally, the project used nested static classes within a single file to handle both database logic and API responses.
+- **Fix:** Created a dedicated `dto` package. Each resource (Library, Book, etc.) now has its own DTO file.
+- **Learning Point:** Decoupling your API contract (DTOs) from your internal data model (Entities) allows you to change your database without breaking your API users.
+
+### 2. Package Organization
+- **Problem:** Data access objects were in a package named `dao`.
+- **Fix:** Renamed the package to `repository`.
+- **Learning Point:** While "DAO" is a valid pattern, the Spring community almost universally uses the "Repository" naming convention when working with Spring Data JPA.
+
+### 3. Standardized Error Handling
+- **Problem:** Error responses were inconsistent, sometimes returning raw Maps and other times leaking internal exception messages.
+- **Fix:** Implemented a unified `ErrorResponse` DTO and updated the `GlobalErrorHandler`.
+- **Learning Point:** Professional APIs should always return a predictable JSON structure for errors (e.g., status, message, timestamp) so that frontend clients can handle them gracefully.
+
+### 4. RESTful API Design
+- **Problem:** Some endpoint paths were overly complex or action-oriented rather than resource-oriented.
+- **Fix:** Simplified paths like `POST /checkouts` and utilized request bodies for IDs instead of path variables when appropriate.
+- **Learning Point:** REST APIs should be intuitive. Focus on "Resources" (Nouns) and use HTTP Verbs (GET, POST, PUT, DELETE) to define "Actions".
+
+### 5. Code Hygiene
+- **Problem:** Unused parameters and redundant transactional attributes cluttered the code.
+- **Fix:** Removed default `(readOnly = false)` from `@Transactional` and purged unused method arguments.
+- **Learning Point:** "Clean Code" reduces cognitive load. If code doesn't serve a purpose, it shouldn't be there.

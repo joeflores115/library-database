@@ -29,5 +29,4 @@ public class Borrower extends AbstractAuditingEntity {
 	@OneToMany(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
 	private Set<Checkout> checkouts = new HashSet<>();
-	
 }

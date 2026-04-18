@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import library.management.controller.model.LibraryManagementData;
+import library.management.dto.LibraryDto;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,14 +29,15 @@ public class LibraryManagementControllerTest {
 
     @Test
     public void testCreateLibrary_ValidationFailure() throws Exception {
-        LibraryManagementData invalidData = new LibraryManagementData();
+        LibraryDto invalidData = new LibraryDto();
         // Name and Address are missing, should trigger validation failure
 
         mockMvc.perform(post("/libraries")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidData)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name").value("Name is required"))
-                .andExpect(jsonPath("$.address").value("Address is required"));
+                .andExpect(jsonPath("$.error").value("Validation Error"))
+                .andExpect(jsonPath("$.details.name").value("Name is required"))
+                .andExpect(jsonPath("$.details.address").value("Address is required"));
     }
 }

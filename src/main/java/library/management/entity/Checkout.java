@@ -35,8 +35,4 @@ public class Checkout {
 	private LocalDate dueDate;
 	@EqualsAndHashCode.Exclude
 	private LocalDate returnDate;	
-	
-	
-	
-	
 }
