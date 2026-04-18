@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-public class Borrower {
+public class Borrower extends AbstractAuditingEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

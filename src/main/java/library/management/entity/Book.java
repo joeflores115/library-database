@@ -18,7 +18,7 @@ import lombok.ToString;
 
 @Entity
 @Data
-public class Book {
+public class Book extends AbstractAuditingEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

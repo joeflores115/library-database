@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Library {
+public class Library extends AbstractAuditingEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
