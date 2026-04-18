@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Library {
+public class Libraries {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

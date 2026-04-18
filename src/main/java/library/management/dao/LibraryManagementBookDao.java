@@ -10,6 +10,4 @@ public interface LibraryManagementBookDao extends JpaRepository<Book, Long> {
 
 	List<Book> findAllByLibraryLibraryId(Long libraryId);
 
-	List<Book> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(String title, String author);
-
 }

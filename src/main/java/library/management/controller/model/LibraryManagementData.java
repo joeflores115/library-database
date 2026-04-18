@@ -7,7 +7,7 @@ import java.util.Set;
 import library.management.entity.Book;
 import library.management.entity.Borrower;
 import library.management.entity.Checkout;
-import library.management.entity.Library;
+import library.management.entity.Libraries;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -32,7 +32,7 @@ public class LibraryManagementData {
 	private Set<LibraryManagementBooks> books = new HashSet<>();
 	
 	
-	public LibraryManagementData(Library library)
+	public LibraryManagementData(Libraries library)
 	{
 		libraryId= library.getLibraryId();
 		name= library.getName();
@@ -65,8 +65,8 @@ public class LibraryManagementData {
 		this.phone = phone;
 	}
 	
-	public Library toLibrary() {
-		Library library = new Library();
+	public Libraries toLibrary() {
+		Libraries library = new Libraries();
 		
 		library.setLibraryId(libraryId);
 		library.setName(name);

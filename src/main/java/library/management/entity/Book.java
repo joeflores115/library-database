@@ -37,7 +37,7 @@ public class Book {
 	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "library_id", nullable = false)
-	private Library library;
+	private Libraries library;
 	
 	
 	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
