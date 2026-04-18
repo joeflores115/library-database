@@ -7,7 +7,10 @@ import java.util.Set;
 import library.management.entity.Book;
 import library.management.entity.Borrower;
 import library.management.entity.Checkout;
-import library.management.entity.Libraries;
+import library.management.entity.Library;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,7 +20,9 @@ import lombok.NoArgsConstructor;
 public class LibraryManagementData {
 
 	private Long libraryId;
+	@NotBlank(message = "Name is required")
 	private String name;
+	@NotBlank(message = "Address is required")
 	private String address;
 	private String city;
 	private String state;
@@ -27,7 +32,7 @@ public class LibraryManagementData {
 	private Set<LibraryManagementBooks> books = new HashSet<>();
 	
 	
-	public LibraryManagementData(Libraries library)
+	public LibraryManagementData(Library library)
 	{
 		libraryId= library.getLibraryId();
 		name= library.getName();
@@ -60,8 +65,8 @@ public class LibraryManagementData {
 		this.phone = phone;
 	}
 	
-	public Libraries toLibrary() {
-		Libraries library = new Libraries();
+	public Library toLibrary() {
+		Library library = new Library();
 		
 		library.setLibraryId(libraryId);
 		library.setName(name);
@@ -147,9 +152,13 @@ public class LibraryManagementData {
 	public static class BookData
 	{
 		private Long bookId;
+		@NotBlank(message = "Title is required")
 		private String title;
+		@NotBlank(message = "Author is required")
 		private String author;
+		@NotBlank(message = "ISBN is required")
 		private String isbn;
+		@Min(value = 0, message = "Quantity cannot be negative")
 		private int quantity;
 		
 		public BookData(Book book)
@@ -180,8 +189,12 @@ public class LibraryManagementData {
 	public static class BorrowerData
 	{
 		private Long borrowerId;
+		@NotBlank(message = "Name is required")
 		private String name;
+		@NotBlank(message = "Address is required")
 		private String address;
+		@Email(message = "Invalid email format")
+		@NotBlank(message = "Email is required")
 		private String email;
 		
 		public BorrowerData(Borrower borrower)

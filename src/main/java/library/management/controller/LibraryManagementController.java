@@ -1,5 +1,7 @@
 package library.management.controller;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,7 +39,7 @@ public class LibraryManagementController
 	
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public LibraryManagementData createLibrary(@RequestBody LibraryManagementData libraryData)
+	public LibraryManagementData createLibrary(@Valid @RequestBody LibraryManagementData libraryData)
 	{
 		log.info("Creating library: {}", libraryData);
 		
@@ -47,7 +50,7 @@ public class LibraryManagementController
 	
 	@PostMapping("/{libraryId}/book")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public BookData insertBook(@PathVariable Long libraryId, @RequestBody BookData bookData)
+	public BookData insertBook(@PathVariable Long libraryId, @Valid @RequestBody BookData bookData)
 	{
 		log.info("Creating book: {}", bookData);
 		
@@ -57,7 +60,7 @@ public class LibraryManagementController
 	
 	@PostMapping("/{libraryId}/book/borrower")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public BorrowerData insertBorrower(@PathVariable Long libraryId, @RequestBody BorrowerData borrowerData)
+	public BorrowerData insertBorrower(@PathVariable Long libraryId, @Valid @RequestBody BorrowerData borrowerData)
 	{
 		log.info("Creating borrower: {}", borrowerData);
 		
@@ -67,7 +70,7 @@ public class LibraryManagementController
 	
 	@PostMapping("/book/{bookId}/checkout/{borrowerId}")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public CheckoutData bookCheckout(@PathVariable Long bookId, @PathVariable Long borrowerId ,@RequestBody CheckoutData checkoutData)
+	public CheckoutData bookCheckout(@PathVariable Long bookId, @PathVariable Long borrowerId ,@Valid @RequestBody CheckoutData checkoutData)
 	{
 		log.info("Creating checkout: {}", checkoutData);
 		
@@ -111,6 +114,14 @@ public class LibraryManagementController
 		
 		return libraryManagementService.retrieveBook(libraryId, bookId);
 	}
+
+	@GetMapping("/book/search")
+	public List<BookData> searchBooks(@RequestParam String searchTerm)
+	{
+		log.info("Searching for books with term: {}", searchTerm);
+
+		return libraryManagementService.searchBooks(searchTerm);
+	}
 	
 	@GetMapping("/{libraryId}/book/borrower")
 	public List<BorrowerData> retrieveAllBorrowers(@PathVariable Long libraryId)
@@ -149,7 +160,7 @@ public class LibraryManagementController
 	//********************************************
 	
 	@PutMapping("/{libraryId}")
-	public LibraryManagementData updateLibrary(@PathVariable Long libraryId ,@RequestBody LibraryManagementData libraryData)
+	public LibraryManagementData updateLibrary(@PathVariable Long libraryId ,@Valid @RequestBody LibraryManagementData libraryData)
 	{
 		libraryData.setLibraryId(libraryId);
 		log.info("Updating library: {}", libraryData);
@@ -157,7 +168,7 @@ public class LibraryManagementController
 		return libraryManagementService.saveLibrary(libraryData);
 	}
 	@PutMapping("/{libraryId}/book/{bookId}")
-	public BookData updateBook(@PathVariable Long libraryId, @PathVariable Long bookId ,@RequestBody BookData bookData)
+	public BookData updateBook(@PathVariable Long libraryId, @PathVariable Long bookId ,@Valid @RequestBody BookData bookData)
 	{
 		bookData.setBookId(bookId);
 		log.info("Updating book: {}", bookData);
@@ -165,7 +176,7 @@ public class LibraryManagementController
 		return libraryManagementService.saveBook(libraryId, bookData);
 	}
 	@PutMapping("/{libraryId}/book/borrower/{borrowerId}")
-	public BorrowerData updateBorrower(@PathVariable Long libraryId, @PathVariable Long borrowerId ,@RequestBody BorrowerData borrowerData)
+	public BorrowerData updateBorrower(@PathVariable Long libraryId, @PathVariable Long borrowerId ,@Valid @RequestBody BorrowerData borrowerData)
 	{
 		borrowerData.setBorrowerId(borrowerId);
 		log.info("Updating borrower: {}", borrowerData);
@@ -173,18 +184,18 @@ public class LibraryManagementController
 		return libraryManagementService.saveBorrower(borrowerData);
 	}
 	@PutMapping("/book/{bookId}/checkout/{checkoutId}")
-	public CheckoutData updateCheckout(@PathVariable Long checkoutId ,@RequestBody CheckoutData checkoutData)
+	public CheckoutData updateCheckout(@PathVariable Long checkoutId ,@Valid @RequestBody CheckoutData checkoutData)
 	{
 		checkoutData.setCheckoutId(checkoutId);
 		log.info("Updating checkout: {}", checkoutData);
 		
-		return libraryManagementService.returnBook(checkoutId);
+		return libraryManagementService.updateCheckout(checkoutId, checkoutData);
 	}
 	
 	
 	//@PutMapping("/book/{bookId}/checkout/{checkoutId}")
 	//@ResponseStatus(code = HttpStatus.CREATED)
-	//public CheckoutData bookReturn(@PathVariable Long checkoutId ,@RequestBody CheckoutData checkoutData)
+	//public CheckoutData bookReturn(@PathVariable Long checkoutId ,@Valid @RequestBody CheckoutData checkoutData)
 	//{
 	//	log.info("Returning book: {}", checkoutData);
 		
