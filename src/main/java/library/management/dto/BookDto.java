@@ -1,8 +1,8 @@
 package library.management.dto;
 
 import library.management.entity.Book;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,16 +14,20 @@ public class BookDto {
 	private String title;
 	@NotBlank(message = "Author is required")
 	private String author;
-	@NotBlank(message = "ISBN is required")
 	private String isbn;
-	@Min(value = 0, message = "Quantity cannot be negative")
-	private int quantity;
+
+    @NotNull(message = "Owner ID is required")
+    private Long ownerId;
+    private String ownerName;
 
 	public BookDto(Book book) {
 		this.bookId = book.getBookId();
 		this.title = book.getTitle();
 		this.author = book.getAuthor();
 		this.isbn = book.getIsbn();
-		this.quantity = book.getQuantity();
+        if (book.getOwner() != null) {
+            this.ownerId = book.getOwner().getMemberId();
+            this.ownerName = book.getOwner().getName();
+        }
 	}
 }

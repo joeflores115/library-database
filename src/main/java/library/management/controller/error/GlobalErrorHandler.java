@@ -48,6 +48,18 @@ public class GlobalErrorHandler
 				.build();
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(code = HttpStatus.CONFLICT)
+    public ErrorResponse handleIllegalStateException(IllegalStateException ex) {
+        log.error("Conflict error: {}", ex.getMessage());
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage())
+                .build();
+    }
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
 	public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {

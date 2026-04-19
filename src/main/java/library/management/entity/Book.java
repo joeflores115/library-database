@@ -29,16 +29,14 @@ public class Book extends AbstractAuditingEntity {
 	private String author;
 	@EqualsAndHashCode.Exclude
 	private String isbn;
-	@EqualsAndHashCode.Exclude
-	private int quantity;
 	
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@ManyToOne
-	@JoinColumn(name = "library_id", nullable = false)
-	private Library library;
+	@JoinColumn(name = "owner_id", nullable = false)
+	private Member owner;
 	
 	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
-	private Set<Checkout> checkouts = new HashSet<>();
+	private Set<Loan> loans = new HashSet<>();
 }
