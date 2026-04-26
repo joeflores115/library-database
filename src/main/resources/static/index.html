@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Shared Library</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">📚 Private Shared Library</div>
+        <p>Connect with friends and share your favorite reads.</p>
+    </header>
+
+    <main class="container">
+        <!-- Message Toast -->
+        <div id="toast" class="toast hidden"></div>
+
+        <section class="admin-grid">
+            <!-- Add Member -->
+            <div class="card">
+                <h3>👥 Add a Person</h3>
+                <form id="person-form">
+                    <input type="text" id="person-name" placeholder="Full Name" required>
+                    <input type="email" id="person-email" placeholder="Email Address" required>
+                    <button type="submit">Add to Club</button>
+                </form>
+            </div>
+
+            <!-- Add Book -->
+            <div class="card">
+                <h3>📖 Add a Book</h3>
+                <form id="book-form">
+                    <input type="text" id="book-title" placeholder="Book Title" required>
+                    <input type="text" id="book-author" placeholder="Author" required>
+                    <select id="book-owner-select" required>
+                        <option value="" disabled selected>Who owns this book?</option>
+                    </select>
+                    <button type="submit">Add to Collection</button>
+                </form>
+            </div>
+
+            <!-- Borrow Book -->
+            <div class="card">
+                <h3>🤝 Borrow a Book</h3>
+                <form id="borrow-form">
+                    <select id="borrow-book-select" required>
+                        <option value="" disabled selected>Which book?</option>
+                    </select>
+                    <select id="borrower-select" required>
+                        <option value="" disabled selected>Who is borrowing it?</option>
+                    </select>
+                    <button type="submit">Confirm Borrowing</button>
+                </form>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="display-section">
+            <div class="section-header">
+                <h2>Library Collection</h2>
+                <div class="filters">
+                    <button id="filter-all" class="active">All Books</button>
+                    <button id="filter-available">Available Now</button>
+                </div>
+            </div>
+            <div id="book-grid" class="grid">
+                <!-- Books loaded dynamically -->
+            </div>
+        </section>
+
+        <section class="display-section">
+            <h2>Active Loans</h2>
+            <div id="loan-list" class="loan-container">
+                <!-- Loans loaded dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

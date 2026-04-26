@@ -6,8 +6,8 @@ A Spring Boot application for a private book-sharing club among friends and fami
 The application is currently a **functional MVP (Minimum Viable Product)** that provides a full backend API and a minimalist web frontend.
 
 - **What it does:** Allows users to manage a peer-to-peer library. You can add members, register books owned by those members, and track borrowing/returning transactions between members.
-- **Web UI:** Accessible at `http://localhost:8080/` when the app is running.
-- **Interactive API Docs:** Accessible via Swagger UI at `http://localhost:8080/swagger-ui.html`.
+- **Web UI:** A user-friendly interface accessible at `http://localhost:8080/`. It uses friendly language (e.g., "Add a Person") and dropdowns instead of technical IDs.
+- **Interactive API Docs:** Accessible via Swagger UI at `http://localhost:8080/swagger-ui.html`. This is primarily for developers to test raw endpoints.
 - **Intentionally Omitted Features:** To keep this educational project focused on core Spring Boot patterns, the following are not yet implemented:
     - **Authentication/Login:** The system assumes a trusted environment; there are no passwords or user sessions.
     - **Cloud Deployment:** Configured for local development.

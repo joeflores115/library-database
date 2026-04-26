@@ -19,6 +19,8 @@ public class BookDto {
     @NotNull(message = "Owner ID is required")
     private Long ownerId;
     private String ownerName;
+    private boolean available;
+    private String borrowerName;
 
 	public BookDto(Book book) {
 		this.bookId = book.getBookId();
@@ -29,5 +31,12 @@ public class BookDto {
             this.ownerId = book.getOwner().getMemberId();
             this.ownerName = book.getOwner().getName();
         }
+        this.available = book.getLoans().stream()
+                .allMatch(loan -> loan.getReturnDate() != null);
+
+        book.getLoans().stream()
+            .filter(l -> l.getReturnDate() == null)
+            .findFirst()
+            .ifPresent(l -> this.borrowerName = l.getBorrower().getName());
 	}
 }
