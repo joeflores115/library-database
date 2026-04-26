@@ -1,22 +1,34 @@
 # Private Shared Library
 
-A Spring Boot backend for a private book-sharing club among friends and family.
+A Spring Boot application for a private book-sharing club among friends and family.
+
+## 🚀 Current Status
+The application is currently a **functional MVP (Minimum Viable Product)** that provides a full backend API and a minimalist web frontend.
+
+- **What it does:** Allows users to manage a peer-to-peer library. You can add members, register books owned by those members, and track borrowing/returning transactions between members.
+- **Web UI:** Accessible at `http://localhost:8080/` when the app is running.
+- **Interactive API Docs:** Accessible via Swagger UI at `http://localhost:8080/swagger-ui.html`.
+- **Intentionally Omitted Features:** To keep this educational project focused on core Spring Boot patterns, the following are not yet implemented:
+    - **Authentication/Login:** The system assumes a trusted environment; there are no passwords or user sessions.
+    - **Cloud Deployment:** Configured for local development.
+    - **Persistent Production DB:** Currently defaults to an H2 in-memory database for easy testing, but can be switched to MySQL in `application.yaml`.
 
 ## 📖 Features
 - **Member Management:** Add friends and family to the club.
 - **Private Inventory:** Track books owned by members.
 - **Borrowing System:** See who has which book and when it's due.
 - **Availability Tracking:** Filter for books that are currently available to borrow.
-
-## 🗄 Data Model
-- **Member:** Name, Email, owned books, active loans.
-- **Book:** Title, Author, ISBN, and its Owner (Member).
-- **Loan:** Tracking the transaction between a Book and a Borrower (Member).
+- **Audit Logs:** Automatically tracks when members and books were added.
 
 ## ⚙️ How to Run
-1. Ensure MySQL is running and a database `library-management` is created.
-2. Update `src/main/resources/application.yaml` with your credentials.
-3. Run: `mvn spring-boot:run`
+1. **Prerequisites:** Java 17+ and Maven installed.
+2. **Standard Run:** Execute `mvn spring-boot:run`.
+3. **Database:** By default, it uses an in-memory H2 database. To use MySQL:
+    - Ensure MySQL is running and a database `library-management` is created.
+    - Update `src/main/resources/application.yaml` with your credentials.
+4. **Access:**
+    - **Frontend:** Open `http://localhost:8080` in your browser.
+    - **Swagger:** Open `http://localhost:8080/swagger-ui.html`.
 
 ## 📡 API Endpoints
 
@@ -26,7 +38,7 @@ A Spring Boot backend for a private book-sharing club among friends and family.
 
 ### Books
 - `POST /api/books` - Register a book you own.
-- `GET /api/books` - View all books in the club.
+- `GET /api/books` - View all books in the club (supports pagination).
 - `GET /api/books/available` - See what you can borrow right now.
 
 ### Loans
