@@ -7,4 +7,5 @@ import library.management.entity.Loan;
 public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findByReturnDateIsNull();
     List<Loan> findByBorrowerMemberIdAndReturnDateIsNull(Long memberId);
+    boolean existsByBookBookIdAndReturnDateIsNull(Long bookId);
 }

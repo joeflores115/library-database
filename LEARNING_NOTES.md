@@ -62,3 +62,17 @@ This document summarizes the professional improvements made to transform a stude
 - **JPA Auditing:** See `AbstractAuditingEntity` to learn how `createdAt` is handled automatically.
 - **Mocking:** Check `SharedLibraryServiceTest` to understand testing logic without a database.
 - **Jakarta Validation:** Review annotations like `@NotBlank` and `@Email` in the DTOs.
+
+---
+
+## 🧪 Testing and Architecture Best Practices
+
+### The "Slice Test" and Configuration Refactor
+- **Problem encountered:** When `@EnableJpaAuditing` was on the main `@SpringBootApplication` class, the `WebMvcTest` (a "slice test") failed to start because it couldn't find the necessary JPA infrastructure.
+- **Solution:** Moved `@EnableJpaAuditing` to its own `JpaAuditingConfig` class.
+- **Why this is better:**
+    - **Separation of Concerns:** The main application class should only be for bootstrapping. Feature-specific configurations should live in their own classes.
+    - **Test performance and reliability:** "Slice tests" (like `@WebMvcTest`) only load the components needed for that layer (e.g., Controllers, Filters). By moving JPA config out of the main class, we ensure the web slice doesn't try to load the database layer unnecessarily.
+- **Key Definitions:**
+    - **Spring Slice Test:** A test that loads only a specific part of the Application Context (e.g., Web, Data, or JSON) to keep tests fast and focused.
+    - **@WebMvcTest:** Specifically focuses on the Controller layer, mocking everything else. It shouldn't depend on your database or auditing logic.
