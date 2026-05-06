@@ -7,76 +7,150 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">📚 Private Shared Library</div>
-        <p>Connect with friends and share your favorite reads.</p>
-    </header>
-
-    <main class="container">
-        <!-- Message Toast -->
-        <div id="toast" class="toast hidden"></div>
-
-        <section class="admin-grid">
-            <!-- Add Member -->
-            <div class="card">
-                <h3>👥 Add a Person</h3>
-                <form id="person-form">
-                    <input type="text" id="person-name" placeholder="Full Name" required>
-                    <input type="email" id="person-email" placeholder="Email Address" required>
-                    <button type="submit">Add to Club</button>
-                </form>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">📚 SharedLib</span>
             </div>
+            <ul class="nav-links">
+                <li class="active" data-section="dashboard"><a href="#">Dashboard</a></li>
+                <li data-section="books"><a href="#">Books</a></li>
+                <li data-section="members"><a href="#">Members</a></li>
+                <li data-section="loans"><a href="#">Borrow & Return</a></li>
+            </ul>
+        </nav>
 
-            <!-- Add Book -->
-            <div class="card">
-                <h3>📖 Add a Book</h3>
-                <form id="book-form">
-                    <input type="text" id="book-title" placeholder="Book Title" required>
-                    <input type="text" id="book-author" placeholder="Author" required>
-                    <select id="book-owner-select" required>
-                        <option value="" disabled selected>Who owns this book?</option>
-                    </select>
-                    <button type="submit">Add to Collection</button>
-                </form>
-            </div>
-
-            <!-- Borrow Book -->
-            <div class="card">
-                <h3>🤝 Borrow a Book</h3>
-                <form id="borrow-form">
-                    <select id="borrow-book-select" required>
-                        <option value="" disabled selected>Which book?</option>
-                    </select>
-                    <select id="borrower-select" required>
-                        <option value="" disabled selected>Who is borrowing it?</option>
-                    </select>
-                    <button type="submit">Confirm Borrowing</button>
-                </form>
-            </div>
-        </section>
-
-        <hr>
-
-        <section class="display-section">
-            <div class="section-header">
-                <h2>Library Collection</h2>
-                <div class="filters">
-                    <button id="filter-all" class="active">All Books</button>
-                    <button id="filter-available">Available Now</button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="header-info">
+                    <h1>Private Shared Library</h1>
+                    <p>Sharing favorite reads with friends and family.</p>
                 </div>
-            </div>
-            <div id="book-grid" class="grid">
-                <!-- Books loaded dynamically -->
-            </div>
-        </section>
+            </header>
 
-        <section class="display-section">
-            <h2>Active Loans</h2>
-            <div id="loan-list" class="loan-container">
-                <!-- Loans loaded dynamically -->
-            </div>
-        </section>
-    </main>
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Books</span>
+                        <span id="stat-total-books" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Available Now</span>
+                        <span id="stat-available-books" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Out on Loan</span>
+                        <span id="stat-borrowed-books" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Members</span>
+                        <span id="stat-total-members" class="stat-value">0</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card recent-activity">
+                        <h3>Recent Activity</h3>
+                        <div id="recent-activity-list" class="activity-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                    <div class="card quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button onclick="switchSection('loans')">🤝 Borrow a Book</button>
+                            <button onclick="switchSection('books')">📖 Register New Book</button>
+                            <button onclick="switchSection('members')">👥 Invite a Friend</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Books Section -->
+            <section id="books-section" class="content-section hidden">
+                <div class="section-header">
+                    <h2>Book Collection</h2>
+                    <div class="controls">
+                        <input type="text" id="book-search" placeholder="Search title or author...">
+                        <select id="book-filter">
+                            <option value="all">All Books</option>
+                            <option value="available">Available</option>
+                            <option value="borrowed">Out on Loan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card add-form-container">
+                    <h3>Register a New Book</h3>
+                    <form id="book-form">
+                        <div class="form-row">
+                            <input type="text" id="book-title" placeholder="Book Title" required>
+                            <input type="text" id="book-author" placeholder="Author" required>
+                        </div>
+                        <div class="form-row">
+                            <select id="book-owner-select" required>
+                                <option value="" disabled selected>Who owns this book?</option>
+                            </select>
+                            <button type="submit" id="book-submit-btn">Add to Library</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="book-grid" class="grid">
+                    <!-- Books loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Members Section -->
+            <section id="members-section" class="content-section hidden">
+                <h2>Members List</h2>
+                <div class="card add-form-container">
+                    <h3>Add a New Person</h3>
+                    <form id="person-form">
+                        <div class="form-row">
+                            <input type="text" id="person-name" placeholder="Full Name" required>
+                            <input type="email" id="person-email" placeholder="Email Address" required>
+                            <button type="submit" id="person-submit-btn">Add Member</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="member-grid" class="grid">
+                    <!-- Members loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Loans Section -->
+            <section id="loans-section" class="content-section hidden">
+                <h2>Borrow & Return</h2>
+                <div class="loans-grid">
+                    <div class="card">
+                        <h3>Create New Loan</h3>
+                        <form id="borrow-form">
+                            <select id="borrow-book-select" required>
+                                <option value="" disabled selected>Choose a book...</option>
+                            </select>
+                            <select id="borrower-select" required>
+                                <option value="" disabled selected>Who is borrowing it?</option>
+                            </select>
+                            <button type="submit" id="borrow-submit-btn">Confirm Loan</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>Active Borrowings</h3>
+                        <div id="loan-list" class="loan-container">
+                            <!-- Loans loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Message Toast -->
+    <div id="toast" class="toast hidden"></div>
 
     <script src="app.js"></script>
 </body>
