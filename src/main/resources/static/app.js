@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let members = [];
     let loans = [];
 
-    // Navigation logic
+    // --- Navigation & Modals ---
     const navLinks = document.querySelectorAll('.nav-links li');
     const sections = document.querySelectorAll('.content-section');
 
@@ -12,33 +12,44 @@ document.addEventListener('DOMContentLoaded', () => {
         sections.forEach(s => s.classList.add('hidden'));
         navLinks.forEach(l => l.classList.remove('active'));
 
-        document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+        const section = document.getElementById(`${sectionId}-section`);
+        if (section) section.classList.remove('hidden');
+
         const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
         if (activeLink) activeLink.classList.add('active');
 
-        loadData(); // Refresh data whenever we switch sections
+        loadData();
     };
 
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
-            const sectionId = link.getAttribute('data-section');
-            switchSection(sectionId);
+            switchSection(link.getAttribute('data-section'));
         });
     });
 
-    // Loading State
-    const showLoading = (isLoading) => {
-        const btn = document.querySelector('.nav-links li.active');
-        if (btn) {
-            btn.style.opacity = isLoading ? '0.5' : '1';
-        }
+    window.openModal = (modalId) => {
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        document.getElementById(modalId).classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent scroll
     };
 
-    // API Calls
+    window.closeModal = (modalId) => {
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById(modalId).classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    window.closeAllModals = () => {
+        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    // --- API & Data ---
     const fetchData = async (url) => {
         try {
             const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
             return await response.json();
         } catch (e) {
             showToast(e.message, 'error');
@@ -48,48 +59,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadData = async () => {
         showLoading(true);
-        const booksData = await fetchData('/api/books');
-        const membersData = await fetchData('/api/members');
-        const loansData = await fetchData('/api/loans/active');
+        const [booksData, membersData, loansData] = await Promise.all([
+            fetchData('/api/books'),
+            fetchData('/api/members'),
+            fetchData('/api/loans/active')
+        ]);
 
-        if (booksData) books = booksData.content || [];
-        if (membersData) members = Array.isArray(membersData) ? membersData : (membersData.content || []);
-        if (loansData) loans = Array.isArray(loansData) ? loansData : (loansData.content || []);
+        books = booksData?.content || [];
+        members = Array.isArray(membersData) ? membersData : (membersData?.content || []);
+        loans = Array.isArray(loansData) ? loansData : (loansData?.content || []);
 
-        renderDashboard();
+        renderAll();
+        showLoading(false);
+    };
+
+    const renderAll = () => {
+        renderStats();
+        renderActivity();
         renderBooks();
         renderMembers();
         renderLoans();
         updateDropdowns();
-        showLoading(false);
     };
 
-    // Rendering Logic
-    const renderDashboard = () => {
+    // --- Rendering ---
+    const renderStats = () => {
         document.getElementById('stat-total-books').textContent = books.length;
         document.getElementById('stat-available-books').textContent = books.filter(b => b.available).length;
         document.getElementById('stat-borrowed-books').textContent = books.filter(b => !b.available).length;
         document.getElementById('stat-total-members').textContent = members.length;
+    };
 
+    const renderActivity = () => {
         const activityList = document.getElementById('recent-activity-list');
-        activityList.innerHTML = '';
+        const items = [
+            ...books.slice(-3).map(b => ({
+                text: `<strong>${b.title}</strong> was added to the library`,
+                icon: '📖',
+                ts: b.createdAt
+            })),
+            ...loans.slice(-3).map(l => ({
+                text: `<strong>${l.borrowerName}</strong> borrowed <strong>${l.bookTitle}</strong>`,
+                icon: '🤝',
+                ts: l.loanDate
+            }))
+        ].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 5);
 
-        // Mock recent activity based on loans and new books
-        const recentItems = [
-            ...books.slice(-2).map(b => ({ text: `New book added: ${b.title}`, type: 'book' })),
-            ...loans.slice(-3).map(l => ({ text: `${l.borrowerName} borrowed ${l.bookTitle}`, type: 'loan' }))
-        ];
-
-        if (recentItems.length === 0) {
-            activityList.innerHTML = '<p class="text-muted">No recent activity found.</p>';
-        } else {
-            recentItems.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'activity-item';
-                div.innerHTML = `<span>${item.type === 'book' ? '📖' : '🤝'}</span> <span>${item.text}</span>`;
-                activityList.appendChild(div);
-            });
+        if (items.length === 0) {
+            activityList.innerHTML = '<p class="text-muted">No recent actions recorded.</p>';
+            return;
         }
+
+        activityList.innerHTML = items.map(item => `
+            <div class="activity-item">
+                <div class="activity-icon">${item.icon}</div>
+                <div>${item.text}</div>
+            </div>
+        `).join('');
     };
 
     const renderBooks = () => {
@@ -106,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (filtered.length === 0) {
-            grid.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No books match your criteria. Try a different search or filter.</div>';
+            grid.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No books found. Try adjusting your search.</div>';
             return;
         }
 
@@ -117,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>
                 <div class="item-title">${book.title}</div>
                 <div class="item-subtitle">by ${book.author}</div>
-                <div class="item-subtitle">Owned by: ${book.ownerName}</div>
-                ${!book.available ? `<div class="item-subtitle">Current borrower: <strong>${book.borrowerName}</strong></div>` : ''}
+                <div class="item-subtitle">Owner: <strong>${book.ownerName}</strong></div>
+                ${!book.available ? `<div class="item-subtitle">Currently with: <strong>${book.borrowerName}</strong></div>` : ''}
             </div>
         `).join('');
     };
@@ -126,11 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderMembers = () => {
         const grid = document.getElementById('member-grid');
         if (members.length === 0) {
-            grid.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No members found.</div>';
+            grid.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Invite your first member to get started!</div>';
             return;
         }
         grid.innerHTML = members.map(m => `
-            <div class="member-card">
+            <div class="book-card">
                 <div class="item-title">${m.name}</div>
                 <div class="item-subtitle">${m.email}</div>
             </div>
@@ -140,16 +166,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderLoans = () => {
         const container = document.getElementById('loan-list');
         if (loans.length === 0) {
-            container.innerHTML = '<p class="text-muted">No active loans.</p>';
+            container.innerHTML = '<p class="text-muted" style="text-align: center; padding: 2rem;">No active loans. Everything is in its place!</p>';
             return;
         }
         container.innerHTML = loans.map(loan => `
-            <div class="loan-item">
-                <div>
-                    <strong>${loan.bookTitle}</strong><br>
-                    <small>Borrowed by ${loan.borrowerName}</small>
+            <div class="activity-item" style="justify-content: space-between">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="activity-icon">🤝</div>
+                    <div>
+                        <strong>${loan.bookTitle}</strong><br>
+                        <small class="text-muted">Borrowed by ${loan.borrowerName}</small>
+                    </div>
                 </div>
-                <button class="return-btn" onclick="returnBook(${loan.loanId})">Return</button>
+                <button class="btn-sm" style="background: var(--warning)" onclick="returnBook(${loan.loanId})">Return Book</button>
             </div>
         `).join('');
     };
@@ -165,73 +194,46 @@ document.addEventListener('DOMContentLoaded', () => {
         ownerSelect.innerHTML = memberOptions;
         borrowerSelect.innerHTML = memberOptions;
 
-        borrowBookSelect.innerHTML = '<option value="" disabled selected>Choose a book...</option>' +
+        borrowBookSelect.innerHTML = '<option value="" disabled selected>Choose an available book...</option>' +
             books.filter(b => b.available).map(b => `<option value="${b.bookId}">${b.title}</option>`).join('');
     };
 
-    // Actions
-    document.getElementById('person-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const data = {
-            name: document.getElementById('person-name').value,
-            email: document.getElementById('person-email').value
+    // --- Actions ---
+    const handleFormSubmit = async (formId, modalId, url, method, successMsg) => {
+        const form = document.getElementById(formId);
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Special handling for selects since FormData might need manual mapping if IDs are needed
+            if (formId === 'book-form') data.ownerId = document.getElementById('book-owner-select').value;
+            if (formId === 'borrow-form') {
+                data.bookId = document.getElementById('borrow-book-select').value;
+                data.borrowerId = document.getElementById('borrower-select').value;
+            }
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                showToast(successMsg, 'success');
+                form.reset();
+                closeModal(modalId);
+                loadData();
+            } else {
+                const err = await res.json();
+                showToast(err.message || 'Action failed', 'error');
+            }
         };
-        const res = await fetch('/api/members', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (res.ok) {
-            showToast('Member added successfully!', 'success');
-            e.target.reset();
-            loadData();
-        } else {
-            const err = await res.json();
-            showToast(err.message || 'Failed to add member', 'error');
-        }
     };
 
-    document.getElementById('book-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const data = {
-            title: document.getElementById('book-title').value,
-            author: document.getElementById('book-author').value,
-            ownerId: document.getElementById('book-owner-select').value
-        };
-        const res = await fetch('/api/books', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (res.ok) {
-            showToast('Book registered!', 'success');
-            e.target.reset();
-            loadData();
-        } else {
-            showToast('Failed to register book', 'error');
-        }
-    };
-
-    document.getElementById('borrow-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const data = {
-            bookId: document.getElementById('borrow-book-select').value,
-            borrowerId: document.getElementById('borrower-select').value
-        };
-        const res = await fetch('/api/loans', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (res.ok) {
-            showToast('Loan confirmed!', 'success');
-            e.target.reset();
-            loadData();
-        } else {
-            const err = await res.json();
-            showToast(err.message || 'Failed to create loan', 'error');
-        }
-    };
+    handleFormSubmit('person-form', 'member-modal', '/api/members', 'POST', 'Member invited!');
+    handleFormSubmit('book-form', 'book-modal', '/api/books', 'POST', 'Book registered!');
+    handleFormSubmit('borrow-form', 'borrow-modal', '/api/loans', 'POST', 'Loan created!');
 
     window.returnBook = async (loanId) => {
         const res = await fetch(`/api/loans/${loanId}/return`, { method: 'PUT' });
@@ -243,11 +245,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Search and Filter Listeners
-    document.getElementById('book-search').oninput = renderBooks;
-    document.getElementById('book-filter').onchange = renderBooks;
+    // --- Utils ---
+    const showLoading = (isLoading) => {
+        const main = document.querySelector('.main-content');
+        main.style.opacity = isLoading ? '0.6' : '1';
+        main.style.pointerEvents = isLoading ? 'none' : 'auto';
+    };
 
-    // Toast Utility
     const showToast = (msg, type = 'success') => {
         const toast = document.getElementById('toast');
         toast.textContent = msg;
@@ -255,6 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 3000);
     };
+
+    document.getElementById('book-search').oninput = renderBooks;
+    document.getElementById('book-filter').onchange = renderBooks;
 
     // Initial Load
     loadData();

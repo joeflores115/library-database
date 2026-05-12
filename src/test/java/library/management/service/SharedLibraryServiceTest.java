@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,8 +53,12 @@ public class SharedLibraryServiceTest {
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-        when(loanRepository.findByReturnDateIsNull()).thenReturn(Collections.emptyList());
-        when(loanRepository.save(any(Loan.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(loanRepository.existsByBookBookIdAndReturnDateIsNull(bookId)).thenReturn(false);
+        when(loanRepository.save(any(Loan.class))).thenAnswer(i -> {
+            Loan l = (Loan) i.getArguments()[0];
+            l.setLoanId(100L); // Ensure ID is set for DTO conversion
+            return l;
+        });
 
         LoanDto request = new LoanDto();
         request.setBookId(bookId);
@@ -77,12 +80,9 @@ public class SharedLibraryServiceTest {
         Book book = new Book();
         book.setBookId(bookId);
 
-        Loan existingLoan = new Loan();
-        existingLoan.setBook(book);
-
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(new Member()));
-        when(loanRepository.findByReturnDateIsNull()).thenReturn(Collections.singletonList(existingLoan));
+        when(loanRepository.existsByBookBookIdAndReturnDateIsNull(bookId)).thenReturn(true);
 
         LoanDto request = new LoanDto();
         request.setBookId(bookId);

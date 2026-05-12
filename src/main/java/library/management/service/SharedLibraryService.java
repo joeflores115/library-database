@@ -87,8 +87,7 @@ public class SharedLibraryService {
                 .orElseThrow(() -> new NoSuchElementException("Member (borrower) not found with ID: " + loanDto.getBorrowerId()));
 
         // Rule: cannot borrow if already checked out
-        boolean isBorrowed = loanRepository.findByReturnDateIsNull().stream()
-                .anyMatch(l -> l.getBook().getBookId().equals(book.getBookId()));
+        boolean isBorrowed = loanRepository.existsByBookBookIdAndReturnDateIsNull(book.getBookId());
 
         if (isBorrowed) {
             throw new NoCopiesAvailableException("Book is already lent out: " + book.getTitle());
