@@ -13,11 +13,11 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-public class Checkout {
+public class Loan extends AbstractAuditingEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long checkoutId;
+	private Long loanId;
 	
 	@ManyToOne
 	@JoinColumn(name = "book_id", nullable = false)
@@ -27,16 +27,12 @@ public class Checkout {
 	@ManyToOne
 	@JoinColumn(name = "borrower_id", nullable = false)
 	@EqualsAndHashCode.Exclude
-	private Borrower borrower;
+	private Member borrower;
 	
 	@EqualsAndHashCode.Exclude
-	private LocalDate checkoutDate;
+	private LocalDate borrowDate;
 	@EqualsAndHashCode.Exclude
 	private LocalDate dueDate;
 	@EqualsAndHashCode.Exclude
 	private LocalDate returnDate;	
-	
-	
-	
-	
 }

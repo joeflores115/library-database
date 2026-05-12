@@ -14,20 +14,21 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-public class Borrower {
+public class Member extends AbstractAuditingEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long borrowerId;
+	private Long memberId;
 	@EqualsAndHashCode.Exclude
 	private String name;
-	@EqualsAndHashCode.Exclude
-	private String address;
 	@EqualsAndHashCode.Exclude
 	private String email;
 	
 	@OneToMany(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
-	private Set<Checkout> checkouts = new HashSet<>();
-	
+	private Set<Loan> loans = new HashSet<>();
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    private Set<Book> ownedBooks = new HashSet<>();
 }
